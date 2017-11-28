@@ -74,7 +74,7 @@ def equal_probability_vote(task_run_info):
     for task in tasklist:
         task_frame = data.loc[task,['task_id', 'info', 'sparse_info']]
 
-        if  datacount[int(task)] != 1:
+        if  datacount[int(task)] != 1:# 要判断下是否只有一个, 否则.mean()会出问题
             task_info = task_frame['sparse_info'].mean()
             task_info = np.argmax(task_info)
             task_incert = task_frame.head(1)

@@ -95,6 +95,18 @@ for epoch in range(n_epoch):
 
     if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
         print("Epoch %d of %d took %fs" % (epoch + 1, n_epoch, time.time() - start_time))
+
+        train_loss, train_acc, n_batch = 0, 0, 0
+        for X_train_a, y_train_a in tl.iterate.minibatches(
+                X_train, y_train, batch_size, shuffle=True):
+            err, ac = sess.run([cost, acc], feed_dict={x: X_train_a, y_: y_train_a})
+            train_loss += err
+            train_acc += ac
+            n_batch += 1
+        print("   train loss: %f" % (train_loss / n_batch))
+        print("   train acc: %f" % (train_acc / n_batch))
+
+
         test_loss, test_acc, n_batch = 0, 0, 0
         for X_test_a, y_test_a in tl.iterate.minibatches(
                 X_test, y_test, batch_size, shuffle=False):
@@ -104,3 +116,4 @@ for epoch in range(n_epoch):
             n_batch += 1
         print("   test loss: %f" % (test_loss / n_batch))
         print("   test acc: %f" % (test_acc / n_batch))
+
