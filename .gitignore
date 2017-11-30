@@ -103,3 +103,5 @@ ENV/
 # mypath
 .idea/
 /ML&DL/data/
+/DeepSteganalysis/database/CropedBoossBase
+!/DeepSteganalysis/database/CropedBoossBase/readme.md
