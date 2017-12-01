@@ -66,10 +66,10 @@ def data_to_tfrecord(path, tfrecordname):
             stego3.pgm
     ...
     '''
-
+    classes = {'cover', 'stego'}
     writer = tf.python_io.TFRecordWriter(tfrecordname)
-    for index, name in enumerate(os.listdir(path)):
-        class_path = path + name +'/'
+    for index, name in enumerate(classes):
+        class_path = path + name +'\\'
         for img_name in os.listdir(class_path):
             print(name, end=' ')
             print(img_name)
