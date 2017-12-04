@@ -41,13 +41,13 @@ with tf.device('/cpu:0'):
     # prepare data in cpu
     sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
     x_train, y_train = read_and_decode_without_distortion('train.tfrecords')
-    x_test, y_test = read_and_decode_without_distortion('test.tfrecords')
+    x_test, y_test_ = read_and_decode_without_distortion('test.tfrecords')
 
     # prepare batch
     x_train_batch, y_train_batch = tf.train.shuffle_batch([x_train, y_train],
                                                           batch_size=batch_size, capacity=2000,
                                                           min_after_dequeue=1000)  # , num_threads=32) # set the number of threads here
-    x_test_batch, y_test_batch = tf.train.batch([x_test, y_test],
+    x_test_batch, y_test_batch = tf.train.batch([x_test, y_test_],
                                                 batch_size=batch_size, capacity=50000)  # , num_threads=32)
 
 
@@ -94,12 +94,9 @@ with tf.device('/cpu:0'):
         return net, cost, acc, train_vars
 
 
-    # with tf.device('/gpu:0'):  # <-- remove it if you don't have GPU
-    #     network, cost, acc, train_vars= model(x_train_batch, y_train_batch, False)
-    #     _, cost_test, acc_test, _ = model(x_test_batch, y_test_batch, True)
-
-    network, cost, acc, train_vars = model(x_train_batch, y_train_batch, False)
-    _, cost_test, acc_test, _ = model(x_test_batch, y_test_batch, True)
+    with tf.device('/gpu:0'):  # <-- remove it if you don't have GPU
+        network, cost, acc, train_vars= model(x_train_batch, y_train_batch, False)
+        _, cost_test, acc_test, _ = model(x_test_batch, y_test_batch, True)
 
     # train
     n_epoch = 50000
@@ -108,12 +105,9 @@ with tf.device('/cpu:0'):
     n_step_epoch = int(32000 / batch_size)
     n_step = n_epoch * n_step_epoch
 
-    # with tf.device('/gpu:0'):   # <-- remove it if you don't have GPU
-    #     train_op = tf.train.AdamOptimizer(learning_rate, beta1=0.9, beta2=0.999,
-    #         epsilon=1e-08, use_locking=False).minimize(cost, var_list=train_vars)
-
-    train_op = tf.train.AdamOptimizer(learning_rate, beta1=0.9, beta2=0.999,
-                                      epsilon=1e-08, use_locking=False).minimize(cost, var_list=train_vars)
+    with tf.device('/gpu:0'):   # <-- remove it if you don't have GPU
+        train_op = tf.train.AdamOptimizer(learning_rate, beta1=0.9, beta2=0.999,
+            epsilon=1e-08, use_locking=False).minimize(cost, var_list=train_vars)
 
     sess.run(tf.local_variables_initializer())
     sess.run(tf.global_variables_initializer())
@@ -150,10 +144,10 @@ with tf.device('/cpu:0'):
             print("   train acc: %f" % (train_acc / n_batch))
 
             test_loss, test_acc, n_batch = 0, 0, 0
-            for _ in range(int(len(y_test) / batch_size)):
+            for _ in range(int(16000 / batch_size)):
                 err, ac = sess.run([cost_test, acc_test])
-                test_loss += err;
-                test_acc += ac;
+                test_loss += err
+                test_acc += ac
                 n_batch += 1
             print("   test loss: %f" % (test_loss / n_batch))
             print("   test acc: %f" % (test_acc / n_batch))
