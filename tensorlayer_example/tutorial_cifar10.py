@@ -204,4 +204,3 @@ for epoch in range(n_epoch):
             test_loss += err; test_acc += ac; n_batch += 1
         print("   test loss: %f" % (test_loss/ n_batch))
         print("   test acc: %f" % (test_acc/ n_batch))
-        

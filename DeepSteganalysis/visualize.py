@@ -1,58 +1,10 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
-# @Time    : 2017/12/1 17:31
+# @Time    : 2017/12/8 14:22
 # @Author  : Shiyu Li
 # @Software: PyCharm
 
-'''
-import tensorflow as tf
-import tensorlayer as tl
-from tensorlayer.layers import *
-import numpy as np
-import time
 
-def read_and_decode_without_distortion(filename):
-
-    filename_queue = tf.train.string_input_producer([filename])
-    reader = tf.TFRecordReader()
-    _, serialized_example = reader.read(filename_queue)
-    feature = tf.parse_single_example(serialized_example,
-                                      features={
-                                          'label':tf.FixedLenFeature([], tf.int64),
-                                          'img_raw':tf.FixedLenFeature([], tf.string),
-                                      })
-    img = tf.decode_raw(feature['img_raw'], tf.float32)
-    img = tf.reshape(img, [256,256,1])
-    #img = tf.cast(img, tf.float32) * (1./255) - 0.5
-    label = tf.cast(feature['label'], tf.int32)
-
-    return img, label
-
-x , y =read_and_decode_without_distortion('test.tfrecords')
-
-print(type(x))
-'''
-# if __name__ == '__main__':
-#     main()
-
-
-import tensorflow as tf
-import numpy as np
-
-i=0
-for serialized_example in tf.python_io.tf_record_iterator("test.cifar10"):
-    example = tf.train.Example()
-    example.ParseFromString(serialized_example)
-
-    image = example.features.feature['image'].bytes_list.value
-    label = example.features.feature['label'].int64_list.value
-    image = tf.decode_raw(image, tf.uint8)
-    print(type(image))
-    break
-
-
-
-'''
 import tensorflow as tf
 import tensorlayer as tl
 from tensorlayer.layers import *
@@ -73,14 +25,16 @@ def read_and_decode(filename):
                                            'label': tf.FixedLenFeature([], tf.int64),
                                            'img_raw' : tf.FixedLenFeature([], tf.string),
                                        })
-    # You can do more image distortion here for training data
-    img = tf.decode_raw(features['img_raw'], tf.float32)
-    img = tf.reshape(img, [32, 32, 3])
+    img = tf.decode_raw(features['img_raw'], tf.uint8)
+    print(type(img))
+    print(tf.size(img))
+    img = tf.reshape(img, [256, 256, 1])
+    # img = tf.reshape(img, [32, 32, 3])
     label = tf.cast(features['label'], tf.int32)
     return img, label
 
 # Example to visualize data
-img, label = read_and_decode("train.cifar10")
+img, label = read_and_decode("boossbase.test")
 img_batch, label_batch = tf.train.shuffle_batch([img, label],
                                                 batch_size=4,
                                                 capacity=50000,
@@ -105,4 +59,3 @@ with tf.Session() as sess:
     coord.request_stop()
     coord.join(threads)
     sess.close()
-'''

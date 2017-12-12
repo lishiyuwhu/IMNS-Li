@@ -106,3 +106,11 @@ ENV/
 /DeepSteganalysis/database/CropedBoossBase
 !/DeepSteganalysis/database/CropedBoossBase/readme.md
 *.tfrecords
+*.test
+*.train
+*.pgm
+*.jpg
+*.png
+*.cifar10
+*.pngtest
+*.pngtrain
