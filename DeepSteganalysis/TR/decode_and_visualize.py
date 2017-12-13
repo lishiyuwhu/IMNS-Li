@@ -26,6 +26,7 @@ def read_and_decode(filename):
                                        })
     img = tf.decode_raw(features['img_raw'], tf.uint8)
     img = tf.reshape(img, [512, 512, 1])
+    # img = tf.cast(img, tf.float32)
     label = tf.cast(features['label'], tf.int32)
     return img, label
 
@@ -45,12 +46,9 @@ with tf.Session() as sess:
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
-    for i in range(3):
-        print("Step %d" % i)
-        val, l = sess.run([img_batch, label_batch])
-        print(type(val))
-        # Image.fromarray(np.squeeze(val[0], axis=(2,))).show()
-
+    val, l = sess.run([img_batch, label_batch])
+    print(type(val))
+    Image.fromarray(np.squeeze(val[0], axis=(2,))).show()
 
     coord.request_stop()
     coord.join(threads)
