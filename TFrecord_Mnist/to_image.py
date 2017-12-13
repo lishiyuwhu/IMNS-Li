@@ -13,7 +13,7 @@ import struct, os
 
 root = os.getcwd()
 for i in range(10):
-    os.makedirs(root + '/pngtrain/' + str(i))
+    os.makedirs(root + '/train/' + str(i))
 
 filename1 = 'train-images.idx3-ubyte'
 filename2 = 'train-labels.idx1-ubyte'
@@ -51,4 +51,4 @@ for i in range(images):
             index += struct.calcsize('>B')
 
     print('save ' + str(i) + 'image')
-    image.save('pngtrain/' + str(labelArr[i]) + '/' + str(i) + '.png')
+    image.save('pngtrain/' + str(labelArr[i]) + '/' + str(i) + '.pgm')

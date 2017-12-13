@@ -1,9 +1,8 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
-# @Time    : 2017/12/8 14:22
+# @Time    : 2017/12/12 20:08
 # @Author  : Shiyu Li
 # @Software: PyCharm
-
 
 import tensorflow as tf
 import tensorlayer as tl
@@ -26,15 +25,12 @@ def read_and_decode(filename):
                                            'img_raw' : tf.FixedLenFeature([], tf.string),
                                        })
     img = tf.decode_raw(features['img_raw'], tf.uint8)
-    print(type(img))
-    print(tf.size(img))
-    img = tf.reshape(img, [256, 256, 1])
-    # img = tf.reshape(img, [32, 32, 3])
+    img = tf.reshape(img, [512, 512, 1])
     label = tf.cast(features['label'], tf.int32)
     return img, label
 
 # Example to visualize data
-img, label = read_and_decode("boossbase.test")
+img, label = read_and_decode("test.tfrecords")
 img_batch, label_batch = tf.train.shuffle_batch([img, label],
                                                 batch_size=4,
                                                 capacity=50000,
@@ -49,12 +45,12 @@ with tf.Session() as sess:
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
-    for i in range(3):  # number of mini-batch (step)
+    for i in range(3):
         print("Step %d" % i)
         val, l = sess.run([img_batch, label_batch])
-        # exit()
-        print(val.shape, l)
-        tl.visualize.images2d(val, second=1, saveable=False, name='batch'+str(i), dtype=np.uint8, fig_idx=2020121)
+        print(type(val))
+        # Image.fromarray(np.squeeze(val[0], axis=(2,))).show()
+
 
     coord.request_stop()
     coord.join(threads)

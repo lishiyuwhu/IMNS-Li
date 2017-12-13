@@ -18,22 +18,6 @@ from PIL import Image
 import os
 import io
 
-def read_and_decode(filename, is_train=None):
-    """ Return tensor to read from TFRecord """
-    filename_queue = tf.train.string_input_producer([filename])
-    reader = tf.TFRecordReader()
-    _, serialized_example = reader.read(filename_queue)
-    features = tf.parse_single_example(serialized_example,
-                                       features={
-                                           'label': tf.FixedLenFeature([], tf.int64),
-                                           'img_raw' : tf.FixedLenFeature([], tf.string),
-                                       })
-    img = tf.decode_raw(features['img_raw'], tf.uint8)
-    img = tf.reshape(img, [256, 256, 1])
-    label = tf.cast(features['label'], tf.int32)
-    img = tf.cast(img, tf.float32)
-    return img, label
-
 
 batch_size = 128
 
