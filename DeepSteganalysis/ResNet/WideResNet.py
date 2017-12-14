@@ -13,33 +13,6 @@ from tensorlayer.layers import set_keep
 import numpy as np
 import time
 
-
-def read_and_decode_without_distortion(filename):
-    '''
-    :param filename:
-    :param is_train:
-    :return: Return tensor to read from TFRecord
-    '''
-    filename_queue = tf.train.string_input_producer([filename])
-
-    reader = tf.TFRecordReader()
-    _, serialized_example = reader.read(filename_queue)
-    feature = tf.parse_single_example(serialized_example,
-                                      features={
-                                          'label': tf.FixedLenFeature([], tf.int64),
-                                          'img_raw': tf.FixedLenFeature([], tf.string),
-                                      })
-    img = tf.decode_raw(feature['img_raw'], tf.uint8)
-    img = tf.reshape(img, [256, 256, 1])
-    img = tf.cast(img, tf.float32) * (1. / 255) - 0.5
-    label = tf.cast(feature['label'], tf.int32)
-
-    return img, label
-
-
-
-
-
 class CNNEnv:
     def __init__(self):
 

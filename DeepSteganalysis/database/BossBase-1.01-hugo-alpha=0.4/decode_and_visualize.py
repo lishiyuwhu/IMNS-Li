@@ -5,13 +5,8 @@
 # @Software: PyCharm
 
 import tensorflow as tf
-import tensorlayer as tl
-from tensorlayer.layers import *
 import numpy as np
-import time
 from PIL import Image
-import os
-import io
 
 
 def read_and_decode(filename):
@@ -26,12 +21,12 @@ def read_and_decode(filename):
                                        })
     img = tf.decode_raw(features['img_raw'], tf.uint8)
     img = tf.reshape(img, [512, 512, 1])
-    # img = tf.cast(img, tf.float32)
+    # img = tf.cast(img, tf.float32) # if you want to use tfrecords as input.
     label = tf.cast(features['label'], tf.int32)
     return img, label
 
-# Example to visualize data
-img, label = read_and_decode("test.tfrecords")
+# visualize data
+img, label = read_and_decode("testBossBase-1.01-hugo-alpha=0.4.tfrecords")
 img_batch, label_batch = tf.train.shuffle_batch([img, label],
                                                 batch_size=4,
                                                 capacity=50000,
@@ -48,7 +43,8 @@ with tf.Session() as sess:
 
     val, l = sess.run([img_batch, label_batch])
     print(type(val))
-    Image.fromarray(np.squeeze(val[0], axis=(2,))).show()
+    show_img = Image.fromarray(np.squeeze(val[0], axis=(2,)))
+    show_img.show()
 
     coord.request_stop()
     coord.join(threads)

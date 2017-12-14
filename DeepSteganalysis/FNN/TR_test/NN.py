@@ -39,12 +39,12 @@ with tf.device('/cpu:0'):
     sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
     # prepare data in cpu
 
-    x_train_, y_train_ = read_and_decode("train.tfrecoeds")
+    x_train_, y_train_ = read_and_decode("train.tfrecords")
     x_train_batch, y_train_batch = tf.train.shuffle_batch([x_train_, y_train_],
                                                           batch_size=batch_size, capacity=2000,
                                                           min_after_dequeue=1000)  # , num_threads=32) # set the number of threads here
 
-    x_test_, y_test_ = read_and_decode("test.tfrecoeds")
+    x_test_, y_test_ = read_and_decode("test.tfrecords")
     x_test_batch, y_test_batch = tf.train.batch([x_test_, y_test_],
                                                 batch_size=batch_size, capacity=50000)  # , num_threads=32)
 
@@ -96,7 +96,7 @@ with tf.device('/cpu:0'):
         _, cost_test, acc_test = model(x_test_batch, y_test_batch, True)
 
     ## train
-    n_epoch = 50000
+    n_epoch = 5000
     learning_rate = 0.0001
     print_freq = 1
     n_step_epoch = int(75 / batch_size)
@@ -135,15 +135,15 @@ with tf.device('/cpu:0'):
             epoch, step, step + n_step_epoch, n_step, time.time() - start_time))
             print("   train loss: %f" % (train_loss / n_batch))
             print("   train acc: %f" % (train_acc / n_batch))
-
-            test_loss, test_acc, n_batch = 0, 0, 0
-            for _ in range(int(40/ batch_size)):
-                err, ac = sess.run([cost_test, acc_test])
-                test_loss += err
-                test_acc += ac
-                n_batch += 1
-            print("   test loss: %f" % (test_loss / n_batch))
-            print("   test acc: %f" % (test_acc / n_batch))
+            #
+            # test_loss, test_acc, n_batch = 0, 0, 0
+            # for _ in range(int(40/ batch_size)):
+            #     err, ac = sess.run([cost_test, acc_test])
+            #     test_loss += err
+            #     test_acc += ac
+            #     n_batch += 1
+            # print("   test loss: %f" % (test_loss / n_batch))
+            # print("   test acc: %f" % (test_acc / n_batch))
 
     coord.request_stop()
     coord.join(threads)

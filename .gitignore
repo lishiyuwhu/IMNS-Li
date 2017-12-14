@@ -102,9 +102,7 @@ ENV/
 
 # mypath
 .idea/
-/ML&DL/data/
-/DeepSteganalysis/database/CropedBoossBase
-!/DeepSteganalysis/database/CropedBoossBase/readme.md
+ML&DL/Learn_use_tfrecords/TFrecord_cifar10/data/
 *.tfrecords
 *.test
 *.train
