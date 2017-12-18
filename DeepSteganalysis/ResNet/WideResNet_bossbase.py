@@ -105,8 +105,9 @@ with tf.device('/cpu:0'):
     sess = tf.Session(config=config)
 
     # prepare data in cpu
-    x_train_, y_train_ = read_and_decode(trainfile)  # , True)
-    x_test_, y_test_ = read_and_decode(testfile)  # , False)
+    x_train_, y_train_ = read_and_decode(trainfile , True)
+    x_test_, y_test_ = read_and_decode(testfile , False)
+    x_test_, y_test_ = read_and_decode(testfile , False)
 
     x_train_batch, y_train_batch = tf.train.shuffle_batch([x_train_, y_train_],
                                                           batch_size=batch_size, capacity=2000, min_after_dequeue=1000,
