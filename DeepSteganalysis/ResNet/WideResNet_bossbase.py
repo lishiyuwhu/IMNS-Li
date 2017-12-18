@@ -12,31 +12,25 @@ import numpy as np
 import time
 import os
 
-
-## Download data, and convert to TFRecord format, see ```tutorial_tfrecord.py```
-# X_train, y_train, X_test, y_test = tl.files.load_cifar10_dataset(
-#     shape=(-1, 32, 32, 3), plotable=False)
-
-
-def read_and_decode(filename):
-    """ Return tensor to read from TFRecord """
-    filename_queue = tf.train.string_input_producer([filename])
-    reader = tf.TFRecordReader()
-    _, serialized_example = reader.read(filename_queue)
-    features = tf.parse_single_example(serialized_example,
-                                       features={
-                                           'label': tf.FixedLenFeature([], tf.int64),
-                                           'img_raw': tf.FixedLenFeature([], tf.string),
-                                       })
-
-    img = tf.decode_raw(features['img_raw'], tf.uint8)
-    img = tf.reshape(img, [256, 256, 1])
-    img = tf.cast(img, tf.float32)
-    label = tf.cast(features['label'], tf.int32)
-    return img, label
+#
+# def read_and_decode(filename):
+#     filename_queue = tf.train.string_input_producer([filename])
+#     reader = tf.TFRecordReader()
+#     _, serialized_example = reader.read(filename_queue)
+#     features = tf.parse_single_example(serialized_example,
+#                                        features={
+#                                            'label': tf.FixedLenFeature([], tf.int64),
+#                                            'img_raw': tf.FixedLenFeature([], tf.string),
+#                                        })
+#
+#     img = tf.decode_raw(features['img_raw'], tf.uint8)
+#     img = tf.reshape(img, [256, 256, 1])
+#     img = tf.cast(img, tf.float32)
+#     label = tf.cast(features['label'], tf.int32)
+#     return img, label
 
 
-'''
+
 def read_and_decode(filename, is_train=None):
     """ Return tensor to read from TFRecord """
     filename_queue = tf.train.string_input_producer([filename])
@@ -48,49 +42,45 @@ def read_and_decode(filename, is_train=None):
                                            'img_raw': tf.FixedLenFeature([], tf.string),
                                        })
     # You can do more image distortion here for training data
-    img = tf.decode_raw(features['img_raw'], tf.float32)
-    img = tf.reshape(img, [32, 32, 3])
-    img = tf.cast(img, tf.float32)  # * (1. / 255) - 0.5
-    # if is_train == True:
-    #     # 1. Randomly crop a [height, width] section of the image.
-    #     img = tf.random_crop(img, [24, 24, 3])
-    #     # 2. Randomly flip the image horizontally.
-    #     img = tf.image.random_flip_left_right(img)
-    #     # 3. Randomly change brightness.
-    #     img = tf.image.random_brightness(img, max_delta=63)
-    #     # 4. Randomly change contrast.
-    #     img = tf.image.random_contrast(img, lower=0.2, upper=1.8)
-    #     # 5. Subtract off the mean and divide by the variance of the pixels.
-    #     try: # TF 0.12+
-    #         img = tf.image.per_image_standardization(img)
-    #     except: # earlier TF versions
-    #         img = tf.image.per_image_whitening(img)
-    #
-    # elif is_train == False:
-    #     # 1. Crop the central [height, width] of the image.
-    #     img = tf.image.resize_image_with_crop_or_pad(img, 24, 24)
-    #     # 2. Subtract off the mean and divide by the variance of the pixels.
-    #     try: # TF 0.12+
-    #         img = tf.image.per_image_standardization(img)
-    #     except: # earlier TF versions
-    #         img = tf.image.per_image_whitening(img)
-    # elif is_train == None:
-    #     img = img
+    img = tf.decode_raw(features['img_raw'], tf.uint8)
+    img = tf.reshape(img, [256, 256, 1])
+    img = tf.cast(img, tf.float32) * (1. / 255) - 0.5
+    if is_train == True:
+        # 1. Randomly crop a [height, width] section of the image.
+        img = tf.random_crop(img, [128, 128, 1])
+        # 2. Randomly flip the image horizontally.
+        img = tf.image.random_flip_left_right(img)
+        # 3. Randomly change brightness.
+        img = tf.image.random_brightness(img, max_delta=63)
+        # 4. Randomly change contrast.
+        img = tf.image.random_contrast(img, lower=0.2, upper=1.8)
+        # 5. Subtract off the mean and divide by the variance of the pixels.
+        img = tf.image.per_image_standardization(img)
+
+
+    elif is_train == False:
+        # 1. Crop the central [height, width] of the image.
+        img = tf.image.resize_image_with_crop_or_pad(img, 128, 128)
+        # 2. Subtract off the mean and divide by the variance of the pixels.
+        img = tf.image.per_image_standardization(img)
+
+    elif is_train == None:
+        img = img
 
     label = tf.cast(features['label'], tf.int32)
     return img, label
-'''
+
 
 trainfile = '../database/CroppedBossBase-1.0-256x256_SUniward0.4bpp/train_CroppedBossBase-1.0-256x256_stego_SUniward0.4bpp.tfrecords'
 testfile = '../database/CroppedBossBase-1.0-256x256_SUniward0.4bpp/test_CroppedBossBase-1.0-256x256_stego_SUniward0.4bpp.tfrecords'
 
-batch_size = 128
 
-# ## For convience.
+
+
 # num_examples = sum(1 for _ in tf.python_io.tf_record_iterator(trainfile))
 # test_num = sum(1 for _ in tf.python_io.tf_record_iterator(testfile))
+# ## For convenience.
 num_examples = 64000
-
 train_num = num_examples
 test_num = 16000
 
@@ -102,9 +92,10 @@ blocks_per_group = 4
 widening_factor = 4
 
 # Basic info
-batch_num = 128
-img_row = 256
-img_col = 256
+batch_size = 32
+batch_num = batch_size
+img_row = 128
+img_col = 128
 img_channels = 1
 nb_classes = 2
 
@@ -252,12 +243,7 @@ with tf.device('/cpu:0'):
 
             y = net.outputs
 
-            ce = tl.cost.cross_entropy(y, y_, name='cost')
-            # L2 for the MLP, without this, the accuracy will be reduced by 15%.
-            # L2 = 0
-            # for p in tl.layers.get_variables_with_name('relu/W', True, True):
-            #     L2 += tf.contrib.layers.l2_regularizer(0.004)(p)
-            cost = ce  # + L2
+            cost = tl.cost.cross_entropy(y, y_, name='cost')
 
             correct_prediction = tf.equal(tf.cast(tf.argmax(y, 1), tf.int32), y_)
             acc = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
@@ -298,10 +284,6 @@ with tf.device('/cpu:0'):
         start_time = time.time()
         train_loss, train_acc, n_batch = 0, 0, 0
         for s in range(n_step_epoch):
-            ## You can also use placeholder to feed_dict in data after using
-            # val, l = sess.run([x_train_batch, y_train_batch])
-            # tl.visualize.images2d(val, second=3, saveable=False, name='batch', dtype=np.uint8, fig_idx=2020121)
-            # err, ac, _ = sess.run([cost, acc, train_op], feed_dict={x_crop: val, y_: l})
             err, ac, _ = sess.run([cost, acc, train_op])
             step += 1
             train_loss += err

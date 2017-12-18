@@ -64,20 +64,20 @@ with tf.device('/cpu:0'):
         b_init2 = tf.constant_initializer(value=0.1)
         with tf.variable_scope("model", reuse=reuse):
             tl.layers.set_name_reuse(reuse)
-            net = InputLayer(x_crop, name='inputlayer')
+            net = InputLayer(x_crop, name='train_input_layer')
             net = Conv2d(net, 1, (5, 5), (1, 1), act=tf.identity,
                          padding='VALID', W_init=high_pass_filter, name='HighPass')
             net = Conv2d(net, 64, (7, 7), (2, 2), act=tf.nn.relu,
-                         padding='VALID', W_init=W_init, name='trainCONV1')
+                         padding='VALID', W_init=W_init, name='train_CONV1')
             net = Conv2d(net, 16, (5, 5), (2, 2), act=tf.nn.relu,
-                         padding='VALID', W_init=W_init, name='trainCONV2')
-            net = FlattenLayer(net, name='trainFlatten')
+                         padding='VALID', W_init=W_init, name='train_CONV2')
+            net = FlattenLayer(net, name='train_Flatten')
             net = DenseLayer(net, n_units=1000, act=tf.nn.relu,
-                             W_init=W_init2, b_init=b_init2, name='trainFC1')
+                             W_init=W_init2, b_init=b_init2, name='train_FC1')
             net = DenseLayer(net, n_units=1000, act=tf.nn.relu,
-                             W_init=W_init2, b_init=b_init2, name='trainFC2')
+                             W_init=W_init2, b_init=b_init2, name='train_FC2')
             net = DenseLayer(net, n_units=2, act=tf.identity,
-                             W_init=W_init, name='trainOutput')
+                             W_init=W_init, name='train_Output')
         y = net.outputs
         ce = tl.cost.cross_entropy(y, y_, name='cost')
         L2 = 0
