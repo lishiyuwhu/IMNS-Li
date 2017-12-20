@@ -1,9 +1,8 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
-# @Time    : 2017/12/17 14:36
+# @Time    : 2017/12/19 9:56
 # @Author  : Shiyu Li
 # @Software: PyCharm
-# Thanks to @ritchieng!
 
 
 import tensorlayer as tl
@@ -11,24 +10,6 @@ from tensorlayer.layers import *
 import numpy as np
 import time
 import os
-
-#
-# def read_and_decode(filename):
-#     filename_queue = tf.train.string_input_producer([filename])
-#     reader = tf.TFRecordReader()
-#     _, serialized_example = reader.read(filename_queue)
-#     features = tf.parse_single_example(serialized_example,
-#                                        features={
-#                                            'label': tf.FixedLenFeature([], tf.int64),
-#                                            'img_raw': tf.FixedLenFeature([], tf.string),
-#                                        })
-#
-#     img = tf.decode_raw(features['img_raw'], tf.uint8)
-#     img = tf.reshape(img, [256, 256, 1])
-#     img = tf.cast(img, tf.float32)
-#     label = tf.cast(features['label'], tf.int32)
-#     return img, label
-
 
 
 def read_and_decode(filename, is_train=None):
@@ -44,21 +25,14 @@ def read_and_decode(filename, is_train=None):
     img = tf.reshape(img, [256, 256, 1])
     img = tf.cast(img, tf.float32) * (1. / 255) - 0.5
     if is_train == True:
-        # 1. Randomly crop a [height, width] section of the image.
-        img = tf.random_crop(img, [128, 128, 1])
-        # 2. Randomly flip the image horizontally.
-        img = tf.image.random_flip_left_right(img)
-        # 3. Randomly change brightness.
-        img = tf.image.random_brightness(img, max_delta=63)
-        # 4. Randomly change contrast.
-        img = tf.image.random_contrast(img, lower=0.2, upper=1.8)
-        # 5. Subtract off the mean and divide by the variance of the pixels.
+        img = tf.random_crop(img, [64, 64, 1])
+
         img = tf.image.per_image_standardization(img)
 
 
     elif is_train == False:
         # 1. Crop the central [height, width] of the image.
-        img = tf.image.resize_image_with_crop_or_pad(img, 128, 128)
+        img = tf.image.resize_image_with_crop_or_pad(img, 64, 64)
         # 2. Subtract off the mean and divide by the variance of the pixels.
         img = tf.image.per_image_standardization(img)
 
@@ -71,9 +45,6 @@ def read_and_decode(filename, is_train=None):
 
 trainfile = '../database/CroppedBossBase-1.0-256x256_SUniward0.4bpp/train_CroppedBossBase-1.0-256x256_stego_SUniward0.4bpp.tfrecords'
 testfile = '../database/CroppedBossBase-1.0-256x256_SUniward0.4bpp/test_CroppedBossBase-1.0-256x256_stego_SUniward0.4bpp.tfrecords'
-
-
-
 
 # num_examples = sum(1 for _ in tf.python_io.tf_record_iterator(trainfile))
 # test_num = sum(1 for _ in tf.python_io.tf_record_iterator(testfile))
@@ -90,10 +61,10 @@ blocks_per_group = 4
 widening_factor = 4
 
 # Basic info
-batch_size = 32
+batch_size = 128
 batch_num = batch_size
-img_row = 128
-img_col = 128
+img_row = 64
+img_col = 64
 img_channels = 1
 nb_classes = 2
 
@@ -103,8 +74,8 @@ with tf.device('/cpu:0'):
     sess = tf.Session(config=config)
 
     # prepare data in cpu
-    x_train_, y_train_ = read_and_decode(trainfile , True)
-    x_test_, y_test_ = read_and_decode(testfile , False)
+    x_train_, y_train_ = read_and_decode(trainfile, True)
+    x_test_, y_test_ = read_and_decode(testfile, False)
 
     x_train_batch, y_train_batch = tf.train.shuffle_batch([x_train_, y_train_],
                                                           batch_size=batch_size, capacity=2000, min_after_dequeue=1000,
@@ -185,11 +156,29 @@ with tf.device('/cpu:0'):
                                          name=name_merge)
         return out
 
-
     def wide_res_model(x_crop, y_, reuse):
         with tf.variable_scope("model", reuse=reuse):
             tl.layers.set_name_reuse(reuse)
+
+            F0 = np.array([[-1, 2, -2, 2, -1],
+                           [2, -6, 8, -6, 2],
+                           [-2, 8, -12, 8, -2],
+                           [2, -6, 8, -6, 2],
+                           [-1, 2, -2, 2, -1]], dtype=np.float32)
+            F0 = F0 / 12.
+            # assign numpy array to constant_initalizer and pass to get_variable
+            high_pass_filter = tf.constant_initializer(value=F0, dtype=tf.float32)
+
             net = InputLayer(x_crop, name='input')
+            # net = Conv2d(net, 1, (5, 5), (1, 1), act=tf.identity,
+            #              padding='VALID', W_init=high_pass_filter, name='HighPass')
+            net = Conv2dLayer(net,
+                              act=tf.identity,
+                              shape=[5, 5, 1, 1],
+                              strides=[1, 1, 1, 1],
+                              padding='SAME',
+                              name='Highpass',
+                              W_init=high_pass_filter)
             net = Conv2dLayer(net,
                               act=tf.nn.relu,
                               shape=[3, 3, 1, 16],
@@ -263,8 +252,9 @@ with tf.device('/cpu:0'):
     with tf.device('/gpu:0'):
         # train_op = tf.train.AdamOptimizer(learning_rate, beta1=0.9, beta2=0.999,
         #     epsilon=1e-08, use_locking=False).minimize(cost)
+        train_params = network.all_params[3:]
         train_op = tf.train.GradientDescentOptimizer(
-            learning_rate, use_locking=False).minimize(cost, var_list=network.all_params)
+            learning_rate, use_locking=False).minimize(cost, var_list=train_params)
 
     tl.layers.initialize_global_variables(sess)
 
@@ -306,3 +296,6 @@ with tf.device('/cpu:0'):
     coord.request_stop()
     coord.join(threads)
     sess.close()
+
+# if __name__ == '__main__':
+#     main()

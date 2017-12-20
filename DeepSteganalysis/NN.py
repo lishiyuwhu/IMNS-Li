@@ -95,6 +95,17 @@ with tf.device('/cpu:0'):
         network, cost, acc, = model(x_train_batch, y_train_batch, False)
         _, cost_test, acc_test = model(x_test_batch, y_test_batch, True)
 
+
+    print('===========================')
+    print('tl.layers.print_all_variables(train_only=True)')
+    tl.layers.print_all_variables(train_only=True)
+
+    print('===========================')
+    print('network.print_params(details=False)')
+    network.print_params(details=False)
+
+
+
     ## train
     n_epoch = 5000
     learning_rate = 0.0001

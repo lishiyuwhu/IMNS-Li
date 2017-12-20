@@ -1,18 +1,12 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
-# @Time    : 2017/12/8 14:22
+# @Time    : 2017/12/12 20:08
 # @Author  : Shiyu Li
 # @Software: PyCharm
 
-
 import tensorflow as tf
-import tensorlayer as tl
-from tensorlayer.layers import *
 import numpy as np
-import time
 from PIL import Image
-import os
-import io
 
 
 def read_and_decode(filename):
@@ -26,16 +20,18 @@ def read_and_decode(filename):
                                            'img_raw' : tf.FixedLenFeature([], tf.string),
                                        })
     img = tf.decode_raw(features['img_raw'], tf.uint8)
+    img = tf.reshape(img, [256, 256, 1])
+    # img = tf.cast(img, tf.float32) # if you want to use tfrecords as input.
     label = tf.cast(features['label'], tf.int32)
     return img, label
 
-# Example to visualize data
-img, label = read_and_decode("mnistTR.test")
-
-img_batch, label_batch = img, label
-# img_batch, label_batch = tf.train.batch([img, label],
-#                                                 batch_size=2,
-#                                                 capacity=2000)
+# visualize data
+img, label = read_and_decode("test_CroppedBossBase-1.0-256x256_stego_SUniward0.4bpp.tfrecords")
+img_batch, label_batch = tf.train.shuffle_batch([img, label],
+                                                batch_size=4,
+                                                capacity=50000,
+                                                min_after_dequeue=10000,
+                                                num_threads=1)
 print("img_batch   : %s" % img_batch._shape)
 print("label_batch : %s" % label_batch._shape)
 
@@ -44,10 +40,11 @@ with tf.Session() as sess:
     sess.run(init)
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
-    for i in range(3):  # number of mini-batch (step)
-        print("Step %d" % i)
-        val, l = sess.run([img_batch, label_batch])
-        print(val.shape, l)
+
+    val, l = sess.run([img_batch, label_batch])
+    print(type(val))
+    show_img = Image.fromarray(np.squeeze(val[0], axis=(2,)))
+    show_img.show()
 
     coord.request_stop()
     coord.join(threads)

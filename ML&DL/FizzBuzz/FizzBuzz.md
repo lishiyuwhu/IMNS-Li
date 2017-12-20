@@ -1,1 +1,1 @@
-https://lishiyuwhu.github.io/2017-11/%E6%89%8B%E6%92%95Batch%20normalization/
+https://lishiyuwhu.github.io/2017-11/FizzBuzz/
