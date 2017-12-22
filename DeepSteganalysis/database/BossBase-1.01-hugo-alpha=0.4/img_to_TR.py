@@ -74,7 +74,7 @@ def encode(filename):
     name = filename + 'BossBase-1.01-hugo-alpha=0.4.tfrecords'
     print(name)
     writer = tf.python_io.TFRecordWriter(name)
-    classes = {'cover', 'stego'}
+    classes = ['cover', 'stego']
 
     #for image_filename, label in zip(image_filename_list, label_list):
 

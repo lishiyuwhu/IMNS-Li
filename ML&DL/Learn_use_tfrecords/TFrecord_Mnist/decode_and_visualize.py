@@ -20,13 +20,13 @@ def read_and_decode(filename):
                                            'img_raw' : tf.FixedLenFeature([], tf.string),
                                        })
     img = tf.decode_raw(features['img_raw'], tf.uint8)
-    img = tf.reshape(img, [256, 256, 1])
+    img = tf.reshape(img, [28, 28, 1])
     # img = tf.cast(img, tf.float32) # if you want to use tfrecords as input.
     label = tf.cast(features['label'], tf.int32)
     return img, label
 
 # visualize data
-img, label = read_and_decode("test_CroppedBossBase-1.0-256x256_stego_SUniward0.4bpp.tfrecords")
+img, label = read_and_decode("test_Mnist_pgm.tfrecords")
 img_batch, label_batch = tf.train.shuffle_batch([img, label],
                                                 batch_size=4,
                                                 capacity=50000,

@@ -73,7 +73,7 @@ def encode(filename):
     name = filename + '_CroppedBossBase-1.0-256x256_stego_SUniward0.4bpp.tfrecords'
     print(name)
     writer = tf.python_io.TFRecordWriter(name)
-    classes = {'cover', 'stego'}
+    classes = ['cover', 'stego']
 
     #for image_filename, label in zip(image_filename_list, label_list):
 

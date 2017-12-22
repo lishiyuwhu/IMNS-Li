@@ -36,7 +36,7 @@ def encode(filename):
     name = filename + '.tfrecords'
     print(name)
     writer = tf.python_io.TFRecordWriter(name)
-    classes = {'cover', 'stego'}
+    classes = ['cover', 'stego']
 
     #for image_filename, label in zip(image_filename_list, label_list):
 

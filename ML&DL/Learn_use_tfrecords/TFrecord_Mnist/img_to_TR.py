@@ -70,10 +70,10 @@ def encode(filename):
     '''
     cwd = os.getcwd()
     root = cwd + '\\' + filename + '\\'
-    name = filename + '_CroppedBossBase-1.0-256x256_stego_SUniward0.4bpp.tfrecords'
+    name = filename + '_Mnist_pgm.tfrecords'
     print(name)
     writer = tf.python_io.TFRecordWriter(name)
-    classes = {'cover', 'stego'}
+    classes = ['0','1','2','3','4','5','6','7','8','9']
 
     #for image_filename, label in zip(image_filename_list, label_list):
 
@@ -83,12 +83,7 @@ def encode(filename):
             img_path = class_path + img_name
             img = Image.open(img_path)
             print(img_name)
-
-            #data = np.array(img.getdata())
-            # 可视化 Image.fromarray(data.reshape([512,512])).show()
-
             data = img.tobytes()
-            # 可视化 Image.frombytes('L', [512,512], data).show()
             example = tf.train.Example(features=tf.train.Features(feature={
                 "label": tf.train.Feature(int64_list=tf.train.Int64List(value=[index])),
                 'img_raw': tf.train.Feature(bytes_list=tf.train.BytesList(value=[data]))
@@ -107,5 +102,5 @@ if __name__ == '__main__':
 
 
 
-    # encode('train')
+    encode('train')
     encode('test')
