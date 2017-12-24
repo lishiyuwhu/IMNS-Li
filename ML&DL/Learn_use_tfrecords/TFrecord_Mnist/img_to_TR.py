@@ -74,8 +74,7 @@ def encode(filename):
     print(name)
     writer = tf.python_io.TFRecordWriter(name)
     classes = ['0','1','2','3','4','5','6','7','8','9']
-
-    #for image_filename, label in zip(image_filename_list, label_list):
+#for image_filename, label in zip(image_filename_list, label_list):
 
     for index, name in enumerate(classes):
         class_path = root + name + '\\'

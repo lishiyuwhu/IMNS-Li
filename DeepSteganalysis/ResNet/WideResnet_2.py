@@ -12,8 +12,6 @@ import time
 import os
 
 
-
-
 def read_and_decode(filename, is_train=None):
     filename_queue = tf.train.string_input_producer([filename])
     reader = tf.TFRecordReader()
@@ -45,11 +43,8 @@ def read_and_decode(filename, is_train=None):
     return img, label
 
 
-trainfile = '../database/CroppedBossBase-1.0-256x256_SUniward0.4bpp/train_CroppedBossBase-1.0-256x256_stego_SUniward0.4bpp.tfrecords'
-testfile = '../database/CroppedBossBase-1.0-256x256_SUniward0.4bpp/test_CroppedBossBase-1.0-256x256_stego_SUniward0.4bpp.tfrecords'
-
-
-
+trainfile = 'train_CroppedBossBase-1.0-256x256_SUniward0.4bpp.tfrecords'
+testfile = 'test_CroppedBossBase-1.0-256x256_SUniward0.4bpp.tfrecords'
 
 # num_examples = sum(1 for _ in tf.python_io.tf_record_iterator(trainfile))
 # test_num = sum(1 for _ in tf.python_io.tf_record_iterator(testfile))
@@ -79,8 +74,8 @@ with tf.device('/cpu:0'):
     sess = tf.Session(config=config)
 
     # prepare data in cpu
-    x_train_, y_train_ = read_and_decode(trainfile , True)
-    x_test_, y_test_ = read_and_decode(testfile , False)
+    x_train_, y_train_ = read_and_decode(trainfile, True)
+    x_test_, y_test_ = read_and_decode(testfile, False)
 
     x_train_batch, y_train_batch = tf.train.shuffle_batch([x_train_, y_train_],
                                                           batch_size=batch_size, capacity=2000, min_after_dequeue=1000,
