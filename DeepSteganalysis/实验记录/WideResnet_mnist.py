@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
-# @Time    : 2017/12/19 9:56
+# @Time    : 2017/12/19 9:29
 # @Author  : Shiyu Li
 # @Software: PyCharm
 
@@ -24,34 +24,19 @@ def read_and_decode(filename, is_train=None):
     img = tf.decode_raw(features['img_raw'], tf.uint8)
     img = tf.reshape(img, [256, 256, 1])
     img = tf.cast(img, tf.float32) * (1. / 255) - 0.5
-    if is_train == True:
-        img = tf.random_crop(img, [64, 64, 1])
-
-        img = tf.image.per_image_standardization(img)
-
-
-    elif is_train == False:
-        # 1. Crop the central [height, width] of the image.
-        img = tf.image.resize_image_with_crop_or_pad(img, 64, 64)
-        # 2. Subtract off the mean and divide by the variance of the pixels.
-        img = tf.image.per_image_standardization(img)
-
-    elif is_train == None:
-        img = img
-
     label = tf.cast(features['label'], tf.int32)
     return img, label
 
 
-trainfile = '../database/CroppedBossBase-1.0-256x256_SUniward0.4bpp/train_CroppedBossBase-1.0-256x256_stego_SUniward0.4bpp.tfrecords'
-testfile = '../database/CroppedBossBase-1.0-256x256_SUniward0.4bpp/test_CroppedBossBase-1.0-256x256_stego_SUniward0.4bpp.tfrecords'
+trainfile = 'train_Mnist_pgm.tfrecords'
+testfile = 'test_Mnist_pgm.tfrecords'
 
-# num_examples = sum(1 for _ in tf.python_io.tf_record_iterator(trainfile))
-# test_num = sum(1 for _ in tf.python_io.tf_record_iterator(testfile))
+num_examples = sum(1 for _ in tf.python_io.tf_record_iterator(trainfile))
+test_num = sum(1 for _ in tf.python_io.tf_record_iterator(testfile))
 # ## For convenience.
-num_examples = 64000
+# num_examples = 64000
 train_num = num_examples
-test_num = 16000
+# test_num = 16000
 
 index_in_epoch = 0
 epochs_completed = 0
@@ -63,10 +48,10 @@ widening_factor = 4
 # Basic info
 batch_size = 128
 batch_num = batch_size
-img_row = 64
-img_col = 64
+img_row = 28
+img_col = 28
 img_channels = 1
-nb_classes = 2
+nb_classes = 10
 
 with tf.device('/cpu:0'):
     config = tf.ConfigProto(allow_soft_placement=True)
@@ -156,29 +141,11 @@ with tf.device('/cpu:0'):
                                          name=name_merge)
         return out
 
+
     def wide_res_model(x_crop, y_, reuse):
         with tf.variable_scope("model", reuse=reuse):
             tl.layers.set_name_reuse(reuse)
-
-            F0 = np.array([[-1, 2, -2, 2, -1],
-                           [2, -6, 8, -6, 2],
-                           [-2, 8, -12, 8, -2],
-                           [2, -6, 8, -6, 2],
-                           [-1, 2, -2, 2, -1]], dtype=np.float32)
-            F0 = F0 / 12.
-            # assign numpy array to constant_initalizer and pass to get_variable
-            high_pass_filter = tf.constant_initializer(value=F0, dtype=tf.float32)
-
             net = InputLayer(x_crop, name='input')
-            # net = Conv2d(net, 1, (5, 5), (1, 1), act=tf.identity,
-            #              padding='VALID', W_init=high_pass_filter, name='HighPass')
-            net = Conv2dLayer(net,
-                              act=tf.identity,
-                              shape=[5, 5, 1, 1],
-                              strides=[1, 1, 1, 1],
-                              padding='SAME',
-                              name='Highpass',
-                              W_init=high_pass_filter)
             net = Conv2dLayer(net,
                               act=tf.nn.relu,
                               shape=[3, 3, 1, 16],
@@ -252,9 +219,8 @@ with tf.device('/cpu:0'):
     with tf.device('/gpu:0'):
         # train_op = tf.train.AdamOptimizer(learning_rate, beta1=0.9, beta2=0.999,
         #     epsilon=1e-08, use_locking=False).minimize(cost)
-        train_params = network.all_params[3:]
         train_op = tf.train.GradientDescentOptimizer(
-            learning_rate, use_locking=False).minimize(cost, var_list=train_params)
+            learning_rate, use_locking=False).minimize(cost, var_list=network.all_params)
 
     tl.layers.initialize_global_variables(sess)
 

@@ -43,21 +43,7 @@ test_num = sum(1 for _ in tf.python_io.tf_record_iterator(testfile))
 # num_examples = 64000
 train_num = num_examples
 # test_num = 16000
-
-index_in_epoch = 0
-epochs_completed = 0
-
-# For wide resnets
-blocks_per_group = 4
-widening_factor = 4
-
-# Basic info
-batch_size = 32
-batch_num = batch_size
-img_row = 28
-img_col = 28
-img_channels = 1
-nb_classes = 10
+batch_size = 128
 
 with tf.device('/cpu:0'):
     config = tf.ConfigProto(allow_soft_placement=True)
@@ -74,81 +60,7 @@ with tf.device('/cpu:0'):
     x_test_batch, y_test_batch = tf.train.batch([x_test_, y_test_],
                                                 batch_size=batch_size, capacity=50000, num_threads=2)
 
-
-    def zero_pad_channels(x, pad=0):
-        """
-        Function for Lambda layer
-        """
-        pattern = [[0, 0], [0, 0], [0, 0], [pad - pad // 2, pad // 2]]
-        return tf.pad(x, pattern)
-
-
-    def residual_block(x, count, nb_filters=16, subsample_factor=1):
-        prev_nb_channels = x.outputs.get_shape().as_list()[3]
-
-        if subsample_factor > 1:
-            subsample = [1, subsample_factor, subsample_factor, 1]
-            # shortcut: subsample + zero-pad channel dim
-            name_pool = 'pool_layer' + str(count)
-            shortcut = tl.layers.PoolLayer(x,
-                                           ksize=subsample,
-                                           strides=subsample,
-                                           padding='VALID',
-                                           pool=tf.nn.avg_pool,
-                                           name=name_pool)
-
-        else:
-            subsample = [1, 1, 1, 1]
-            # shortcut: identity
-            shortcut = x
-
-        if nb_filters > prev_nb_channels:
-            name_lambda = 'lambda_layer' + str(count)
-            shortcut = tl.layers.LambdaLayer(
-                shortcut,
-                zero_pad_channels,
-                fn_args={'pad': nb_filters - prev_nb_channels},
-                name=name_lambda)
-
-        name_norm = 'norm' + str(count)
-        y = tl.layers.BatchNormLayer(x,
-                                     decay=0.999,
-                                     epsilon=1e-05,
-                                     is_train=True,
-                                     name=name_norm)
-
-        name_conv = 'conv_layer' + str(count)
-        y = tl.layers.Conv2dLayer(y,
-                                  act=tf.nn.relu,
-                                  shape=[3, 3, prev_nb_channels, nb_filters],
-                                  strides=subsample,
-                                  padding='SAME',
-                                  name=name_conv)
-
-        name_norm_2 = 'norm_second' + str(count)
-        y = tl.layers.BatchNormLayer(y,
-                                     decay=0.999,
-                                     epsilon=1e-05,
-                                     is_train=True,
-                                     name=name_norm_2)
-
-        prev_input_channels = y.outputs.get_shape().as_list()[3]
-        name_conv_2 = 'conv_layer_second' + str(count)
-        y = tl.layers.Conv2dLayer(y,
-                                  act=tf.nn.relu,
-                                  shape=[3, 3, prev_input_channels, nb_filters],
-                                  strides=[1, 1, 1, 1],
-                                  padding='SAME',
-                                  name=name_conv_2)
-
-        name_merge = 'merge' + str(count)
-        out = tl.layers.ElementwiseLayer([y, shortcut],
-                                         combine_fn=tf.add,
-                                         name=name_merge)
-        return out
-
-
-    def wide_res_model(x_crop, y_, reuse):
+    def model(x_crop, y_, reuse):
         W_init = tf.truncated_normal_initializer(stddev=1 / 192.0)
         W_init2 = tf.truncated_normal_initializer(stddev=0.04)
         b_init2 = tf.constant_initializer(value=0.1)
@@ -178,8 +90,8 @@ with tf.device('/cpu:0'):
 
 
     with tf.device('/gpu:0'):
-        network, cost, acc, = wide_res_model(x_train_batch, y_train_batch, None)
-        _, cost_test, acc_test = wide_res_model(x_test_batch, y_test_batch, True)
+        network, cost, acc, = model(x_train_batch, y_train_batch, None)
+        _, cost_test, acc_test = model(x_test_batch, y_test_batch, True)
 
     ## train
     n_epoch = 5000
