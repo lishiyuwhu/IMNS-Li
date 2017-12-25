@@ -1,19 +1,14 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
-# @Time    : 2017/12/13 14:06
+# @Time    : 2017/12/25 10:32
 # @Author  : Shiyu Li
 # @Software: PyCharm
 
 
-import tensorflow as tf
 import tensorlayer as tl
 from tensorlayer.layers import *
 import numpy as np
 import time
-from PIL import Image
-import os
-import io
-
 
 def read_and_decode(filename):
     """ Return tensor to read from TFRecord """
@@ -25,28 +20,35 @@ def read_and_decode(filename):
                                            'label': tf.FixedLenFeature([], tf.int64),
                                            'img_raw': tf.FixedLenFeature([], tf.string),
                                        })
-
     img = tf.decode_raw(features['img_raw'], tf.uint8)
-    img = tf.reshape(img, [512, 512, 1])
-    img = tf.cast(img, tf.float32)
+    img = tf.reshape(img, [28, 28, 1])
+    img = tf.cast(img, tf.float32)  # if you want to use tfrecords as input.
     label = tf.cast(features['label'], tf.int32)
     return img, label
 
 
-batch_size = 10
+
+batch_size = 128
+train_file = "train_CroppedBossBase-1.0-256x256_SUniward0.4bpp.tfrecords"
+test_file = "test_CroppedBossBase-1.0-256x256_SUniward0.4bpp.tfrecords"
+
+
+
+
 
 with tf.device('/cpu:0'):
     sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
     # prepare data in cpu
 
-    x_train_, y_train_ = read_and_decode("database\\BossBase-1.01-hugo-alpha=0.4\\trainBossBase-1.01-hugo-alpha=0.4.tfrecords")
+    x_train_, y_train_ = read_and_decode(train_file)
     x_train_batch, y_train_batch = tf.train.shuffle_batch([x_train_, y_train_],
                                                           batch_size=batch_size, capacity=2000,
                                                           min_after_dequeue=1000)  # , num_threads=32) # set the number of threads here
 
-    x_test_, y_test_ = read_and_decode("database\\BossBase-1.01-hugo-alpha=0.4\\testBossBase-1.01-hugo-alpha=0.4.tfrecords")
+    x_test_, y_test_ = read_and_decode(test_file)
     x_test_batch, y_test_batch = tf.train.batch([x_test_, y_test_],
                                                 batch_size=batch_size, capacity=50000)  # , num_threads=32)
+
 
 
     def model(x_crop, y_, reuse):
@@ -64,60 +66,41 @@ with tf.device('/cpu:0'):
         b_init2 = tf.constant_initializer(value=0.1)
         with tf.variable_scope("model", reuse=reuse):
             tl.layers.set_name_reuse(reuse)
-            net = InputLayer(x_crop, name='train_input_layer')
-            net = Conv2d(net, 1, (5, 5), (1, 1), act=tf.identity,
-                         padding='VALID', W_init=high_pass_filter, name='HighPass')
-            net = Conv2d(net, 64, (7, 7), (2, 2), act=tf.nn.relu,
-                         padding='VALID', W_init=W_init, name='train_CONV1')
-            net = Conv2d(net, 16, (5, 5), (2, 2), act=tf.nn.relu,
-                         padding='VALID', W_init=W_init, name='train_CONV2')
-            net = FlattenLayer(net, name='train_Flatten')
-            net = DenseLayer(net, n_units=1000, act=tf.nn.relu,
-                             W_init=W_init2, b_init=b_init2, name='train_FC1')
-            net = DenseLayer(net, n_units=1000, act=tf.nn.relu,
-                             W_init=W_init2, b_init=b_init2, name='train_FC2')
+            net = InputLayer(x_crop, name='inputlayer')
+            net = DenseLayer(net, n_units=2000, act=tf.nn.relu,
+                             W_init=W_init2, b_init=b_init2, name='trainFC1')
+            net = DenseLayer(net, n_units=2000, act=tf.nn.relu,
+                             W_init=W_init2, b_init=b_init2, name='trainFC2')
             net = DenseLayer(net, n_units=2, act=tf.identity,
-                             W_init=W_init, name='train_Output')
+                             W_init=W_init, name='trainOutput')
         y = net.outputs
-        ce = tl.cost.cross_entropy(y, y_, name='cost')
-        L2 = 0
-        for p in tl.layers.get_variables_with_name('FC', True, True):
-            L2 += tf.contrib.layers.l2_regularizer(0.004)(p)
-        cost = ce + L2
-
+        cost = tl.cost.cross_entropy(y, y_, name='cost')
         correct_prediction = tf.equal(tf.cast(tf.argmax(y, 1), tf.int32), y_)
         acc = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
         return net, cost, acc
 
 
+
     with tf.device('/gpu:0'):
         network, cost, acc, = model(x_train_batch, y_train_batch, False)
         _, cost_test, acc_test = model(x_test_batch, y_test_batch, True)
 
-
-    print('===========================')
-    print('tl.layers.print_all_variables(train_only=True)')
-    tl.layers.print_all_variables(train_only=True)
-
-    print('===========================')
-    print('network.print_params(details=False)')
-    network.print_params(details=False)
-
-
-
     ## train
-    n_epoch = 5000
-    learning_rate = 0.0001
+    train_num = sum(1 for _ in tf.python_io.tf_record_iterator(train_file))
+    test_num = sum(1 for _ in tf.python_io.tf_record_iterator(test_file))
+
+    n_epoch = 50000
+    learning_rate = 0.001
     print_freq = 1
-    n_step_epoch = int(75 / batch_size)
+    n_step_epoch = int(train_num / batch_size)
     n_step = n_epoch * n_step_epoch
 
     train_vars = tl.layers.get_variables_with_name('train', True, True)
 
     with tf.device('/gpu:0'):  # <-- remove it if you don't have GPU
-        train_op = tf.train.AdamOptimizer(learning_rate, beta1=0.9, beta2=0.999,
-                                          epsilon=1e-08, use_locking=False).minimize(cost, var_list=train_vars)
+        train_op = tf.train.GradientDescentOptimizer(  # AdamOptimizer(
+            learning_rate, use_locking=False).minimize(cost, var_list=train_vars)
 
     tl.layers.initialize_global_variables(sess)
 
@@ -146,19 +129,16 @@ with tf.device('/cpu:0'):
             epoch, step, step + n_step_epoch, n_step, time.time() - start_time))
             print("   train loss: %f" % (train_loss / n_batch))
             print("   train acc: %f" % (train_acc / n_batch))
-            #
-            # test_loss, test_acc, n_batch = 0, 0, 0
-            # for _ in range(int(40/ batch_size)):
-            #     err, ac = sess.run([cost_test, acc_test])
-            #     test_loss += err
-            #     test_acc += ac
-            #     n_batch += 1
-            # print("   test loss: %f" % (test_loss / n_batch))
-            # print("   test acc: %f" % (test_acc / n_batch))
+
+            test_loss, test_acc, n_batch = 0, 0, 0
+            for _ in range(int(test_num / batch_size)):
+                err, ac = sess.run([cost_test, acc_test])
+                test_loss += err
+                test_acc += ac
+                n_batch += 1
+            print("   test loss: %f" % (test_loss / n_batch))
+            print("   test acc: %f" % (test_acc / n_batch))
 
     coord.request_stop()
     coord.join(threads)
     sess.close()
-
-# if __name__ == '__main__':
-#     main()
