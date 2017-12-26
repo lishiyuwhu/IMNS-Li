@@ -1,6 +1,6 @@
 file structure
 
--BossBase-1.01-cover
+-BossBase-1.01-cover-stego
   -1.pgm
   -2.pgm....
 -BossBase-1.01-hugo-alpha=0.4

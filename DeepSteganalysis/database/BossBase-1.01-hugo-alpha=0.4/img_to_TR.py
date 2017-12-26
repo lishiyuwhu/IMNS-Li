@@ -99,10 +99,10 @@ def encode(filename):
 
 if __name__ == '__main__':
 
-    # cover_data = 'BossBase-1.01-cover'
+    # cover_data = 'BossBase-1.01-cover-stego'
     # stego_data = 'BossBase-1.01-hugo-alpha=0.4'
     # root = os.getcwd()
-    # makefile(root, cover_data, typename='cover', NUM=8000)
+    # makefile(root, cover_data, typename='cover-stego', NUM=8000)
     # makefile(root, stego_data, typename='stego', NUM=8000)
 
     encode('train')

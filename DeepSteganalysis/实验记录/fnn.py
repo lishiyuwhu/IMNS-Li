@@ -21,7 +21,7 @@ def read_and_decode(filename):
                                            'img_raw': tf.FixedLenFeature([], tf.string),
                                        })
     img = tf.decode_raw(features['img_raw'], tf.uint8)
-    img = tf.reshape(img, [28, 28, 1])
+    img = tf.reshape(img, [256, 256, 1])
     img = tf.cast(img, tf.float32)  # if you want to use tfrecords as input.
     label = tf.cast(features['label'], tf.int32)
     return img, label
@@ -67,6 +67,9 @@ with tf.device('/cpu:0'):
         with tf.variable_scope("model", reuse=reuse):
             tl.layers.set_name_reuse(reuse)
             net = InputLayer(x_crop, name='inputlayer')
+            net = Conv2d(net, 1, (5, 5), (1, 1), act=tf.identity, padding='VALID', W_init=high_pass_filter,
+                         name='HighPass')
+            net = FlattenLayer(net, name='trainFlatten')
             net = DenseLayer(net, n_units=2000, act=tf.nn.relu,
                              W_init=W_init2, b_init=b_init2, name='trainFC1')
             net = DenseLayer(net, n_units=2000, act=tf.nn.relu,
@@ -91,7 +94,7 @@ with tf.device('/cpu:0'):
     test_num = sum(1 for _ in tf.python_io.tf_record_iterator(test_file))
 
     n_epoch = 50000
-    learning_rate = 0.001
+    learning_rate = 0.01
     print_freq = 1
     n_step_epoch = int(train_num / batch_size)
     n_step = n_epoch * n_step_epoch

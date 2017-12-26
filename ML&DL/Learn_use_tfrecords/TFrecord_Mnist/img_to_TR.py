@@ -95,7 +95,7 @@ if __name__ == '__main__':
     cover_data = 'CroppedBossBase-1.0-256x256_cover'
     stego_data = 'CroppedBossBase-1.0-256x256_stego_SUniward0.4bpp'
     root = os.getcwd()
-    # makefile(root, cover_data, typename='cover', NUM=32000)
+    # makefile(root, cover_data, typename='cover-stego', NUM=32000)
     # makefile(root, stego_data, typename='stego', NUM=32000)
 
 
