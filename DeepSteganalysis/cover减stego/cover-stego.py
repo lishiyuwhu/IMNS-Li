@@ -10,6 +10,7 @@
 from PIL import Image
 import numpy as np
 
+
 img_c = Image.open('1.pgm')
 img_s = Image.open('11.pgm')
 
@@ -22,6 +23,7 @@ dis = (dis+1)*255
 
 img_dis = dis.reshape([256,256])
 img = Image.fromarray(img_dis)
+print('=========')
 
 np.set_printoptions(threshold=np.nan)
 img.save('dis1.pgm')

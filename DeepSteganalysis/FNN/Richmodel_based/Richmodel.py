@@ -1,5 +1,12 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
+# @Time    : 2017/12/27 15:20
+# @Author  : Shiyu Li
+# @Software: PyCharm
+
+
+#! /usr/bin/python3
+# -*- coding: utf-8 -*-
 # @Time    : 2017/12/25 10:32
 # @Author  : Shiyu Li
 # @Software: PyCharm
@@ -10,7 +17,7 @@ from tensorlayer.layers import *
 import numpy as np
 import time
 
-def read_and_decode(filename, img_shape):
+def read_and_decode(filename, img_size):
     """ Return tensor to read from TFRecord """
     filename_queue = tf.train.string_input_producer([filename])
     reader = tf.TFRecordReader()
@@ -21,36 +28,30 @@ def read_and_decode(filename, img_shape):
                                            'img_raw': tf.FixedLenFeature([], tf.string),
                                        })
     img = tf.decode_raw(features['img_raw'], tf.uint8)
-    img = tf.reshape(img, img_shape)
+    img = tf.reshape(img, img_size)
     img = tf.cast(img, tf.float32)  # if you want to use tfrecords as input.
     label = tf.cast(features['label'], tf.int32)
     return img, label
 
 
-batch_size = 128
+
+batch_size = 64
 train_file = "train_CroppedBossBase-1.0-256x256_SUniward0.4bpp.tfrecords"
 test_file = "test_CroppedBossBase-1.0-256x256_SUniward0.4bpp.tfrecords"
-img_shape= [256,256,1]
-
-
-
-
-
+img_size = [256, 256, 1]
 
 with tf.device('/cpu:0'):
     sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
     # prepare data in cpu
 
-    x_train_, y_train_ = read_and_decode(train_file, img_shape)
+    x_train_, y_train_ = read_and_decode(train_file, img_size)
     x_train_batch, y_train_batch = tf.train.shuffle_batch([x_train_, y_train_],
                                                           batch_size=batch_size, capacity=2000,
                                                           min_after_dequeue=1000)  # , num_threads=32) # set the number of threads here
 
-    x_test_, y_test_ = read_and_decode(test_file, img_shape)
+    x_test_, y_test_ = read_and_decode(test_file, img_size)
     x_test_batch, y_test_batch = tf.train.batch([x_test_, y_test_],
                                                 batch_size=batch_size, capacity=50000)  # , num_threads=32)
-
-
 
     def model(x_crop, y_, reuse):
         F0 = np.array([[-1, 2, -2, 2, -1],
@@ -68,22 +69,17 @@ with tf.device('/cpu:0'):
         with tf.variable_scope("model", reuse=reuse):
             tl.layers.set_name_reuse(reuse)
             net = InputLayer(x_crop, name='inputlayer')
-            net = Conv2d(net, 1, (5, 5), (1, 1), act=tf.identity,
-                         padding='VALID', W_init=high_pass_filter, name='HighPass')
-            net = Conv2d(net, 64, (5, 5), (2, 2), act=tf.nn.relu,
-                         padding='VALID', W_init=W_init, name='trainCONV1')
-            net = Conv2d(net, 16, (5, 5), (2, 2), act=tf.nn.relu,
-                         padding='VALID', W_init=W_init, name='trainCONV2')
+            net = Conv2d(net, 1, (5, 5), (1, 1), act=tf.identity, padding='VALID', W_init=high_pass_filter,
+                         name='HighPass')
             net = FlattenLayer(net, name='trainFlatten')
-            net = DenseLayer(net, n_units=500, act=tf.nn.relu,
+            net = DenseLayer(net, n_units=2000, act=tf.nn.relu,
                              W_init=W_init2, b_init=b_init2, name='trainFC1')
-            net = DenseLayer(net, n_units=500, act=tf.nn.relu,
+            net = DenseLayer(net, n_units=2000, act=tf.nn.relu,
                              W_init=W_init2, b_init=b_init2, name='trainFC2')
             net = DenseLayer(net, n_units=2, act=tf.identity,
                              W_init=W_init, name='trainOutput')
         y = net.outputs
         cost = tl.cost.cross_entropy(y, y_, name='cost')
-
         correct_prediction = tf.equal(tf.cast(tf.argmax(y, 1), tf.int32), y_)
         acc = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
@@ -108,7 +104,7 @@ with tf.device('/cpu:0'):
     train_vars = tl.layers.get_variables_with_name('train', True, True)
 
     with tf.device('/gpu:0'):  # <-- remove it if you don't have GPU
-        train_op = tf.train.GradientDescentOptimizer(  # AdamOptimizer(
+        train_op = tf.train.AdamOptimizer(
             learning_rate, use_locking=False).minimize(cost, var_list=train_vars)
 
     tl.layers.initialize_global_variables(sess)
@@ -151,3 +147,16 @@ with tf.device('/cpu:0'):
     coord.request_stop()
     coord.join(threads)
     sess.close()
+
+
+
+
+
+
+
+
+
+
+
+# if __name__ == '__main__':
+#     main()
