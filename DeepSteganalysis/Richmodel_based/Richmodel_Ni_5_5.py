@@ -28,7 +28,41 @@ def read_and_decode(filename, img_size):
     return img, label
 
 
+def filter_33to55(array33):
+    '''
+    pad 3×3 to be the 5×5 with zeros
+
+    example:
+
+    In [8]:a
+    Out[8]:
+    array([[-1.,  2., -1.],
+       [ 2., -4.,  2.],
+       [-1.,  2., -1.]], dtype=float32)
+
+    In [9]: filter_33to55(a)
+    Out[9]:
+    array([[ 0.,  0.,  0.,  0.,  0.],
+       [ 0., -1.,  2., -1.,  0.],
+       [ 0.,  2., -4.,  2.,  0.],
+       [ 0., -1.,  2., -1.,  0.],
+       [ 0.,  0.,  0.,  0.,  0.]], dtype=float32)
+
+    '''
+
+    a = np.zeros(3, dtype=np.float32)
+    b = np.zeros(5, dtype=np.float32)
+
+    array33 = np.column_stack((a, array33))
+    array33 = np.column_stack((array33, a))
+    array33 = np.row_stack((b, array33))
+    array33 = np.row_stack((array33, b))
+
+    return array33
+
+
 ## file params
+
 train_file = "train_CroppedBossBase-1.0-256x256_SUniward0.4bpp.tfrecords"
 test_file = "test_CroppedBossBase-1.0-256x256_SUniward0.4bpp.tfrecords"
 img_size = [256, 256, 1]
@@ -65,9 +99,15 @@ with tf.device('/cpu:0'):
 
     def model(x_crop, y_, reuse):
         # only use 5*5 richmodel filter here
+        F33 = list(map(filter_33to55, list_33))
+
+        Richmodel_filter = F33 + F55
+        Richmodel_num = len(Richmodel_filter)
+
         F55 = np.array([F55_Edge_1, F55_Edge_2, F55_Edge_3, F55_Edge_4, F55_Square], dtype=np.float32)
+        Richmodel_num = len(F55)
         # assign numpy array to constant_initalizer and pass to get_variable
-        rich_filter_5_5 = tf.constant_initializer(value=F55, dtype=tf.float32)
+        rich_filter = tf.constant_initializer(value=Richmodel_filter, dtype=tf.float32)
 
         # W_init = tf.contrib.layers.xavier_initializer_conv2d
         W_init = tf.truncated_normal_initializer(stddev=0.02)
@@ -78,11 +118,10 @@ with tf.device('/cpu:0'):
             net = InputLayer(x_crop, name='inputlayer')
             net = Conv2dLayer(net,
                               act=tf.identity,
-                              shape=[5, 5, 1, 5],
-                              # 5 features for each 5x5 patch
+                              shape=[5, 5, 1, Richmodel_num],
                               strides=[1, 1, 1, 1],
                               padding='VALID',
-                              W_init=rich_filter_5_5,
+                              W_init=rich_filter,
                               b_init=tf.constant_initializer(value=0.0),
                               name='layer1_richmodel_filter')
             net = Conv2d(net,

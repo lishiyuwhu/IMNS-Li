@@ -11,7 +11,6 @@ import numpy as np
 import time
 from richmodel_filter import *
 
-
 def read_and_decode(filename, img_size):
     """ Return tensor to read from TFRecord """
     filename_queue = tf.train.string_input_producer([filename])

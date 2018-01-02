@@ -25,14 +25,14 @@ def read_and_decode(filename, is_train=None):
     img = tf.reshape(img, [256, 256, 1])
     img = tf.cast(img, tf.float32) * (1. / 255) - 0.5
     if is_train == True:
-        img = tf.random_crop(img, [64, 64, 1])
+        img = tf.random_crop(img, [128, 128, 1])
 
         img = tf.image.per_image_standardization(img)
 
 
     elif is_train == False:
         # 1. Crop the central [height, width] of the image.
-        img = tf.image.resize_image_with_crop_or_pad(img, 64, 64)
+        img = tf.image.resize_image_with_crop_or_pad(img, 128, 128)
         # 2. Subtract off the mean and divide by the variance of the pixels.
         img = tf.image.per_image_standardization(img)
 
@@ -61,10 +61,10 @@ blocks_per_group = 4
 widening_factor = 4
 
 # Basic info
-batch_size = 128
+batch_size = 32
 batch_num = batch_size
-img_row = 64
-img_col = 64
+img_row = 128
+img_col = 128
 img_channels = 1
 nb_classes = 2
 
@@ -160,7 +160,18 @@ with tf.device('/cpu:0'):
     def wide_res_model(x_crop, y_, reuse):
         with tf.variable_scope("model", reuse=reuse):
             tl.layers.set_name_reuse(reuse)
+
+            F0 = np.array([[-1, 2, -2, 2, -1],
+                           [2, -6, 8, -6, 2],
+                           [-2, 8, -12, 8, -2],
+                           [2, -6, 8, -6, 2],
+                           [-1, 2, -2, 2, -1]], dtype=np.float32)
+            F0 = F0 / 12.
+            # assign numpy array to constant_initalizer and pass to get_variable
+            high_pass_filter = tf.constant_initializer(value=F0, dtype=tf.float32)
             net = InputLayer(x_crop, name='input')
+            net = Conv2d(net, 1, (5, 5), (1, 1), act=tf.identity,
+                         padding='VALID', W_init=high_pass_filter, name='HighPass')
             net = Conv2dLayer(net,
                               act=tf.nn.relu,
                               shape=[3, 3, 1, 16],
@@ -232,14 +243,16 @@ with tf.device('/cpu:0'):
     n_step = n_epoch * n_step_epoch
 
     with tf.device('/gpu:0'):
-        # train_op = tf.train.AdamOptimizer(learning_rate, beta1=0.9, beta2=0.999,
-        #     epsilon=1e-08, use_locking=False).minimize(cost)
-        train_op = tf.train.GradientDescentOptimizer(
-            learning_rate, use_locking=False).minimize(cost, var_list=network.all_params)
+        train_op = tf.train.AdamOptimizer(learning_rate, beta1=0.9, beta2=0.999,
+            epsilon=1e-08, use_locking=False).minimize(cost, var_list=network.all_params[2:])
+        # train_op = tf.train.GradientDescentOptimizer(
+            # learning_rate, use_locking=False).minimize(cost, var_list=network.all_params)
 
     tl.layers.initialize_global_variables(sess)
 
+    print('=====network.print_params(False)===========')
     network.print_params(False)
+    print('=====network.print_layers()===========')
     network.print_layers()
 
     print('   learning_rate: %f' % learning_rate)

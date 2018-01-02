@@ -1,0 +1,487 @@
+  [TL] InputLayer  model/input: (32, 128, 128, 1)
+  [TL] Conv2dLayer model/HighPass: shape:[5, 5, 1, 1] strides:[1, 1, 1, 1] pad:VALID act:identity
+  [TL] Conv2dLayer model/cnn_layer_first: shape:[3, 3, 1, 16] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] LambdaLayer  model/lambda_layer0
+  [TL] BatchNormLayer model/norm0: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer0: shape:[3, 3, 16, 64] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second0: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second0: shape:[3, 3, 64, 64] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge0: size:(32, 124, 124, 64) fn:add
+  [TL] BatchNormLayer model/norm1: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer1: shape:[3, 3, 64, 64] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second1: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second1: shape:[3, 3, 64, 64] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge1: size:(32, 124, 124, 64) fn:add
+  [TL] BatchNormLayer model/norm2: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer2: shape:[3, 3, 64, 64] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second2: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second2: shape:[3, 3, 64, 64] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge2: size:(32, 124, 124, 64) fn:add
+  [TL] BatchNormLayer model/norm3: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer3: shape:[3, 3, 64, 64] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second3: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second3: shape:[3, 3, 64, 64] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge3: size:(32, 124, 124, 64) fn:add
+  [TL] PoolLayer   model/pool_layer4: ksize:[1, 2, 2, 1] strides:[1, 2, 2, 1] padding:VALID pool:avg_pool
+  [TL] LambdaLayer  model/lambda_layer4
+  [TL] BatchNormLayer model/norm4: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer4: shape:[3, 3, 64, 128] strides:[1, 2, 2, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second4: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second4: shape:[3, 3, 128, 128] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge4: size:(32, 62, 62, 128) fn:add
+  [TL] BatchNormLayer model/norm5: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer5: shape:[3, 3, 128, 128] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second5: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second5: shape:[3, 3, 128, 128] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge5: size:(32, 62, 62, 128) fn:add
+  [TL] BatchNormLayer model/norm6: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer6: shape:[3, 3, 128, 128] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second6: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second6: shape:[3, 3, 128, 128] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge6: size:(32, 62, 62, 128) fn:add
+  [TL] BatchNormLayer model/norm7: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer7: shape:[3, 3, 128, 128] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second7: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second7: shape:[3, 3, 128, 128] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge7: size:(32, 62, 62, 128) fn:add
+  [TL] PoolLayer   model/pool_layer8: ksize:[1, 2, 2, 1] strides:[1, 2, 2, 1] padding:VALID pool:avg_pool
+  [TL] LambdaLayer  model/lambda_layer8
+  [TL] BatchNormLayer model/norm8: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer8: shape:[3, 3, 128, 256] strides:[1, 2, 2, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second8: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second8: shape:[3, 3, 256, 256] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge8: size:(32, 31, 31, 256) fn:add
+  [TL] BatchNormLayer model/norm9: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer9: shape:[3, 3, 256, 256] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second9: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second9: shape:[3, 3, 256, 256] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge9: size:(32, 31, 31, 256) fn:add
+  [TL] BatchNormLayer model/norm10: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer10: shape:[3, 3, 256, 256] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second10: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second10: shape:[3, 3, 256, 256] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge10: size:(32, 31, 31, 256) fn:add
+  [TL] BatchNormLayer model/norm11: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer11: shape:[3, 3, 256, 256] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second11: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second11: shape:[3, 3, 256, 256] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge11: size:(32, 31, 31, 256) fn:add
+  [TL] BatchNormLayer model/norm_last: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] PoolLayer   model/pool_last: ksize:[1, 8, 8, 1] strides:[1, 8, 8, 1] padding:VALID pool:avg_pool
+  [TL] FlattenLayer model/flatten: 2304
+  [TL] DenseLayer  model/fc: 2 identity
+  [TL] InputLayer  model/input: (32, 128, 128, 1)
+  [TL] Conv2dLayer model/HighPass: shape:[5, 5, 1, 1] strides:[1, 1, 1, 1] pad:VALID act:identity
+  [TL] Conv2dLayer model/cnn_layer_first: shape:[3, 3, 1, 16] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] LambdaLayer  model/lambda_layer0
+  [TL] BatchNormLayer model/norm0: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer0: shape:[3, 3, 16, 64] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second0: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second0: shape:[3, 3, 64, 64] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge0: size:(32, 124, 124, 64) fn:add
+  [TL] BatchNormLayer model/norm1: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer1: shape:[3, 3, 64, 64] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second1: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second1: shape:[3, 3, 64, 64] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge1: size:(32, 124, 124, 64) fn:add
+  [TL] BatchNormLayer model/norm2: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer2: shape:[3, 3, 64, 64] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second2: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second2: shape:[3, 3, 64, 64] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge2: size:(32, 124, 124, 64) fn:add
+  [TL] BatchNormLayer model/norm3: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer3: shape:[3, 3, 64, 64] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second3: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second3: shape:[3, 3, 64, 64] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge3: size:(32, 124, 124, 64) fn:add
+  [TL] PoolLayer   model/pool_layer4: ksize:[1, 2, 2, 1] strides:[1, 2, 2, 1] padding:VALID pool:avg_pool
+  [TL] LambdaLayer  model/lambda_layer4
+  [TL] BatchNormLayer model/norm4: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer4: shape:[3, 3, 64, 128] strides:[1, 2, 2, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second4: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second4: shape:[3, 3, 128, 128] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge4: size:(32, 62, 62, 128) fn:add
+  [TL] BatchNormLayer model/norm5: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer5: shape:[3, 3, 128, 128] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second5: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second5: shape:[3, 3, 128, 128] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge5: size:(32, 62, 62, 128) fn:add
+  [TL] BatchNormLayer model/norm6: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer6: shape:[3, 3, 128, 128] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second6: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second6: shape:[3, 3, 128, 128] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge6: size:(32, 62, 62, 128) fn:add
+  [TL] BatchNormLayer model/norm7: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer7: shape:[3, 3, 128, 128] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second7: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second7: shape:[3, 3, 128, 128] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge7: size:(32, 62, 62, 128) fn:add
+  [TL] PoolLayer   model/pool_layer8: ksize:[1, 2, 2, 1] strides:[1, 2, 2, 1] padding:VALID pool:avg_pool
+  [TL] LambdaLayer  model/lambda_layer8
+  [TL] BatchNormLayer model/norm8: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer8: shape:[3, 3, 128, 256] strides:[1, 2, 2, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second8: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second8: shape:[3, 3, 256, 256] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge8: size:(32, 31, 31, 256) fn:add
+  [TL] BatchNormLayer model/norm9: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer9: shape:[3, 3, 256, 256] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second9: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second9: shape:[3, 3, 256, 256] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge9: size:(32, 31, 31, 256) fn:add
+  [TL] BatchNormLayer model/norm10: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer10: shape:[3, 3, 256, 256] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second10: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second10: shape:[3, 3, 256, 256] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge10: size:(32, 31, 31, 256) fn:add
+  [TL] BatchNormLayer model/norm11: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer11: shape:[3, 3, 256, 256] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] BatchNormLayer model/norm_second11: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] Conv2dLayer model/conv_layer_second11: shape:[3, 3, 256, 256] strides:[1, 1, 1, 1] pad:SAME act:relu
+  [TL] ElementwiseLayer model/merge11: size:(32, 31, 31, 256) fn:add
+  [TL] BatchNormLayer model/norm_last: decay:0.999000 epsilon:0.000010 act:identity is_train:True
+  [TL] PoolLayer   model/pool_last: ksize:[1, 8, 8, 1] strides:[1, 8, 8, 1] padding:VALID pool:avg_pool
+  [TL] FlattenLayer model/flatten: 2304
+  [TL] DenseLayer  model/fc: 2 identity
+=====network.print_params(False)===========
+  param   0: model/HighPass/W_conv2d:0 (5, 5, 1, 1)       float32_ref
+  param   1: model/HighPass/b_conv2d:0 (1,)               float32_ref
+  param   2: model/cnn_layer_first/W_conv2d:0 (3, 3, 1, 16)      float32_ref
+  param   3: model/cnn_layer_first/b_conv2d:0 (16,)              float32_ref
+  param   4: model/norm0/beta:0   (16,)              float32_ref
+  param   5: model/norm0/gamma:0  (16,)              float32_ref
+  param   6: model/norm0/moving_mean:0 (16,)              float32_ref
+  param   7: model/norm0/moving_variance:0 (16,)              float32_ref
+  param   8: model/conv_layer0/W_conv2d:0 (3, 3, 16, 64)     float32_ref
+  param   9: model/conv_layer0/b_conv2d:0 (64,)              float32_ref
+  param  10: model/norm_second0/beta:0 (64,)              float32_ref
+  param  11: model/norm_second0/gamma:0 (64,)              float32_ref
+  param  12: model/norm_second0/moving_mean:0 (64,)              float32_ref
+  param  13: model/norm_second0/moving_variance:0 (64,)              float32_ref
+  param  14: model/conv_layer_second0/W_conv2d:0 (3, 3, 64, 64)     float32_ref
+  param  15: model/conv_layer_second0/b_conv2d:0 (64,)              float32_ref
+  param  16: model/norm1/beta:0   (64,)              float32_ref
+  param  17: model/norm1/gamma:0  (64,)              float32_ref
+  param  18: model/norm1/moving_mean:0 (64,)              float32_ref
+  param  19: model/norm1/moving_variance:0 (64,)              float32_ref
+  param  20: model/conv_layer1/W_conv2d:0 (3, 3, 64, 64)     float32_ref
+  param  21: model/conv_layer1/b_conv2d:0 (64,)              float32_ref
+  param  22: model/norm_second1/beta:0 (64,)              float32_ref
+  param  23: model/norm_second1/gamma:0 (64,)              float32_ref
+  param  24: model/norm_second1/moving_mean:0 (64,)              float32_ref
+  param  25: model/norm_second1/moving_variance:0 (64,)              float32_ref
+  param  26: model/conv_layer_second1/W_conv2d:0 (3, 3, 64, 64)     float32_ref
+  param  27: model/conv_layer_second1/b_conv2d:0 (64,)              float32_ref
+  param  28: model/norm2/beta:0   (64,)              float32_ref
+  param  29: model/norm2/gamma:0  (64,)              float32_ref
+  param  30: model/norm2/moving_mean:0 (64,)              float32_ref
+  param  31: model/norm2/moving_variance:0 (64,)              float32_ref
+  param  32: model/conv_layer2/W_conv2d:0 (3, 3, 64, 64)     float32_ref
+  param  33: model/conv_layer2/b_conv2d:0 (64,)              float32_ref
+  param  34: model/norm_second2/beta:0 (64,)              float32_ref
+  param  35: model/norm_second2/gamma:0 (64,)              float32_ref
+  param  36: model/norm_second2/moving_mean:0 (64,)              float32_ref
+  param  37: model/norm_second2/moving_variance:0 (64,)              float32_ref
+  param  38: model/conv_layer_second2/W_conv2d:0 (3, 3, 64, 64)     float32_ref
+  param  39: model/conv_layer_second2/b_conv2d:0 (64,)              float32_ref
+  param  40: model/norm3/beta:0   (64,)              float32_ref
+  param  41: model/norm3/gamma:0  (64,)              float32_ref
+  param  42: model/norm3/moving_mean:0 (64,)              float32_ref
+  param  43: model/norm3/moving_variance:0 (64,)              float32_ref
+  param  44: model/conv_layer3/W_conv2d:0 (3, 3, 64, 64)     float32_ref
+  param  45: model/conv_layer3/b_conv2d:0 (64,)              float32_ref
+  param  46: model/norm_second3/beta:0 (64,)              float32_ref
+  param  47: model/norm_second3/gamma:0 (64,)              float32_ref
+  param  48: model/norm_second3/moving_mean:0 (64,)              float32_ref
+  param  49: model/norm_second3/moving_variance:0 (64,)              float32_ref
+  param  50: model/conv_layer_second3/W_conv2d:0 (3, 3, 64, 64)     float32_ref
+  param  51: model/conv_layer_second3/b_conv2d:0 (64,)              float32_ref
+  param  52: model/norm4/beta:0   (64,)              float32_ref
+  param  53: model/norm4/gamma:0  (64,)              float32_ref
+  param  54: model/norm4/moving_mean:0 (64,)              float32_ref
+  param  55: model/norm4/moving_variance:0 (64,)              float32_ref
+  param  56: model/conv_layer4/W_conv2d:0 (3, 3, 64, 128)    float32_ref
+  param  57: model/conv_layer4/b_conv2d:0 (128,)             float32_ref
+  param  58: model/norm_second4/beta:0 (128,)             float32_ref
+  param  59: model/norm_second4/gamma:0 (128,)             float32_ref
+  param  60: model/norm_second4/moving_mean:0 (128,)             float32_ref
+  param  61: model/norm_second4/moving_variance:0 (128,)             float32_ref
+  param  62: model/conv_layer_second4/W_conv2d:0 (3, 3, 128, 128)    float32_ref
+  param  63: model/conv_layer_second4/b_conv2d:0 (128,)             float32_ref
+  param  64: model/norm5/beta:0   (128,)             float32_ref
+  param  65: model/norm5/gamma:0  (128,)             float32_ref
+  param  66: model/norm5/moving_mean:0 (128,)             float32_ref
+  param  67: model/norm5/moving_variance:0 (128,)             float32_ref
+  param  68: model/conv_layer5/W_conv2d:0 (3, 3, 128, 128)    float32_ref
+  param  69: model/conv_layer5/b_conv2d:0 (128,)             float32_ref
+  param  70: model/norm_second5/beta:0 (128,)             float32_ref
+  param  71: model/norm_second5/gamma:0 (128,)             float32_ref
+  param  72: model/norm_second5/moving_mean:0 (128,)             float32_ref
+  param  73: model/norm_second5/moving_variance:0 (128,)             float32_ref
+  param  74: model/conv_layer_second5/W_conv2d:0 (3, 3, 128, 128)    float32_ref
+  param  75: model/conv_layer_second5/b_conv2d:0 (128,)             float32_ref
+  param  76: model/norm6/beta:0   (128,)             float32_ref
+  param  77: model/norm6/gamma:0  (128,)             float32_ref
+  param  78: model/norm6/moving_mean:0 (128,)             float32_ref
+  param  79: model/norm6/moving_variance:0 (128,)             float32_ref
+  param  80: model/conv_layer6/W_conv2d:0 (3, 3, 128, 128)    float32_ref
+  param  81: model/conv_layer6/b_conv2d:0 (128,)             float32_ref
+  param  82: model/norm_second6/beta:0 (128,)             float32_ref
+  param  83: model/norm_second6/gamma:0 (128,)             float32_ref
+  param  84: model/norm_second6/moving_mean:0 (128,)             float32_ref
+  param  85: model/norm_second6/moving_variance:0 (128,)             float32_ref
+  param  86: model/conv_layer_second6/W_conv2d:0 (3, 3, 128, 128)    float32_ref
+  param  87: model/conv_layer_second6/b_conv2d:0 (128,)             float32_ref
+  param  88: model/norm7/beta:0   (128,)             float32_ref
+  param  89: model/norm7/gamma:0  (128,)             float32_ref
+  param  90: model/norm7/moving_mean:0 (128,)             float32_ref
+  param  91: model/norm7/moving_variance:0 (128,)             float32_ref
+  param  92: model/conv_layer7/W_conv2d:0 (3, 3, 128, 128)    float32_ref
+  param  93: model/conv_layer7/b_conv2d:0 (128,)             float32_ref
+  param  94: model/norm_second7/beta:0 (128,)             float32_ref
+  param  95: model/norm_second7/gamma:0 (128,)             float32_ref
+  param  96: model/norm_second7/moving_mean:0 (128,)             float32_ref
+  param  97: model/norm_second7/moving_variance:0 (128,)             float32_ref
+  param  98: model/conv_layer_second7/W_conv2d:0 (3, 3, 128, 128)    float32_ref
+  param  99: model/conv_layer_second7/b_conv2d:0 (128,)             float32_ref
+  param 100: model/norm8/beta:0   (128,)             float32_ref
+  param 101: model/norm8/gamma:0  (128,)             float32_ref
+  param 102: model/norm8/moving_mean:0 (128,)             float32_ref
+  param 103: model/norm8/moving_variance:0 (128,)             float32_ref
+  param 104: model/conv_layer8/W_conv2d:0 (3, 3, 128, 256)    float32_ref
+  param 105: model/conv_layer8/b_conv2d:0 (256,)             float32_ref
+  param 106: model/norm_second8/beta:0 (256,)             float32_ref
+  param 107: model/norm_second8/gamma:0 (256,)             float32_ref
+  param 108: model/norm_second8/moving_mean:0 (256,)             float32_ref
+  param 109: model/norm_second8/moving_variance:0 (256,)             float32_ref
+  param 110: model/conv_layer_second8/W_conv2d:0 (3, 3, 256, 256)    float32_ref
+  param 111: model/conv_layer_second8/b_conv2d:0 (256,)             float32_ref
+  param 112: model/norm9/beta:0   (256,)             float32_ref
+  param 113: model/norm9/gamma:0  (256,)             float32_ref
+  param 114: model/norm9/moving_mean:0 (256,)             float32_ref
+  param 115: model/norm9/moving_variance:0 (256,)             float32_ref
+  param 116: model/conv_layer9/W_conv2d:0 (3, 3, 256, 256)    float32_ref
+  param 117: model/conv_layer9/b_conv2d:0 (256,)             float32_ref
+  param 118: model/norm_second9/beta:0 (256,)             float32_ref
+  param 119: model/norm_second9/gamma:0 (256,)             float32_ref
+  param 120: model/norm_second9/moving_mean:0 (256,)             float32_ref
+  param 121: model/norm_second9/moving_variance:0 (256,)             float32_ref
+  param 122: model/conv_layer_second9/W_conv2d:0 (3, 3, 256, 256)    float32_ref
+  param 123: model/conv_layer_second9/b_conv2d:0 (256,)             float32_ref
+  param 124: model/norm10/beta:0  (256,)             float32_ref
+  param 125: model/norm10/gamma:0 (256,)             float32_ref
+  param 126: model/norm10/moving_mean:0 (256,)             float32_ref
+  param 127: model/norm10/moving_variance:0 (256,)             float32_ref
+  param 128: model/conv_layer10/W_conv2d:0 (3, 3, 256, 256)    float32_ref
+  param 129: model/conv_layer10/b_conv2d:0 (256,)             float32_ref
+  param 130: model/norm_second10/beta:0 (256,)             float32_ref
+  param 131: model/norm_second10/gamma:0 (256,)             float32_ref
+  param 132: model/norm_second10/moving_mean:0 (256,)             float32_ref
+  param 133: model/norm_second10/moving_variance:0 (256,)             float32_ref
+  param 134: model/conv_layer_second10/W_conv2d:0 (3, 3, 256, 256)    float32_ref
+  param 135: model/conv_layer_second10/b_conv2d:0 (256,)             float32_ref
+  param 136: model/norm11/beta:0  (256,)             float32_ref
+  param 137: model/norm11/gamma:0 (256,)             float32_ref
+  param 138: model/norm11/moving_mean:0 (256,)             float32_ref
+  param 139: model/norm11/moving_variance:0 (256,)             float32_ref
+  param 140: model/conv_layer11/W_conv2d:0 (3, 3, 256, 256)    float32_ref
+  param 141: model/conv_layer11/b_conv2d:0 (256,)             float32_ref
+  param 142: model/norm_second11/beta:0 (256,)             float32_ref
+  param 143: model/norm_second11/gamma:0 (256,)             float32_ref
+  param 144: model/norm_second11/moving_mean:0 (256,)             float32_ref
+  param 145: model/norm_second11/moving_variance:0 (256,)             float32_ref
+  param 146: model/conv_layer_second11/W_conv2d:0 (3, 3, 256, 256)    float32_ref
+  param 147: model/conv_layer_second11/b_conv2d:0 (256,)             float32_ref
+  param 148: model/norm_last/beta:0 (256,)             float32_ref
+  param 149: model/norm_last/gamma:0 (256,)             float32_ref
+  param 150: model/norm_last/moving_mean:0 (256,)             float32_ref
+  param 151: model/norm_last/moving_variance:0 (256,)             float32_ref
+  param 152: model/fc/W:0         (2304, 2)          float32_ref
+  param 153: model/fc/b:0         (2,)               float32_ref
+  num of params: 5819644
+=====network.print_layers()===========
+  layer   0: model/HighPass/Identity:0 (32, 124, 124, 1)    float32
+  layer   1: model/cnn_layer_first/Relu:0 (32, 124, 124, 16)    float32
+  layer   2: model/norm0/Identity_2:0 (32, 124, 124, 16)    float32
+  layer   3: model/conv_layer0/Relu:0 (32, 124, 124, 64)    float32
+  layer   4: model/norm_second0/Identity_2:0 (32, 124, 124, 64)    float32
+  layer   5: model/conv_layer_second0/Relu:0 (32, 124, 124, 64)    float32
+  layer   6: model/lambda_layer0/Pad:0 (32, 124, 124, 64)    float32
+  layer   7: model/norm1/Identity_2:0 (32, 124, 124, 64)    float32
+  layer   8: model/conv_layer1/Relu:0 (32, 124, 124, 64)    float32
+  layer   9: model/norm_second1/Identity_2:0 (32, 124, 124, 64)    float32
+  layer  10: model/conv_layer_second1/Relu:0 (32, 124, 124, 64)    float32
+  layer  11: model/norm2/Identity_2:0 (32, 124, 124, 64)    float32
+  layer  12: model/conv_layer2/Relu:0 (32, 124, 124, 64)    float32
+  layer  13: model/norm_second2/Identity_2:0 (32, 124, 124, 64)    float32
+  layer  14: model/conv_layer_second2/Relu:0 (32, 124, 124, 64)    float32
+  layer  15: model/norm3/Identity_2:0 (32, 124, 124, 64)    float32
+  layer  16: model/conv_layer3/Relu:0 (32, 124, 124, 64)    float32
+  layer  17: model/norm_second3/Identity_2:0 (32, 124, 124, 64)    float32
+  layer  18: model/conv_layer_second3/Relu:0 (32, 124, 124, 64)    float32
+  layer  19: model/norm4/Identity_2:0 (32, 124, 124, 64)    float32
+  layer  20: model/conv_layer4/Relu:0 (32, 62, 62, 128)    float32
+  layer  21: model/norm_second4/Identity_2:0 (32, 62, 62, 128)    float32
+  layer  22: model/conv_layer_second4/Relu:0 (32, 62, 62, 128)    float32
+  layer  23: model/pool_layer4:0  (32, 62, 62, 64)    float32
+  layer  24: model/lambda_layer4/Pad:0 (32, 62, 62, 128)    float32
+  layer  25: model/norm5/Identity_2:0 (32, 62, 62, 128)    float32
+  layer  26: model/conv_layer5/Relu:0 (32, 62, 62, 128)    float32
+  layer  27: model/norm_second5/Identity_2:0 (32, 62, 62, 128)    float32
+  layer  28: model/conv_layer_second5/Relu:0 (32, 62, 62, 128)    float32
+  layer  29: model/norm6/Identity_2:0 (32, 62, 62, 128)    float32
+  layer  30: model/conv_layer6/Relu:0 (32, 62, 62, 128)    float32
+  layer  31: model/norm_second6/Identity_2:0 (32, 62, 62, 128)    float32
+  layer  32: model/conv_layer_second6/Relu:0 (32, 62, 62, 128)    float32
+  layer  33: model/norm7/Identity_2:0 (32, 62, 62, 128)    float32
+  layer  34: model/conv_layer7/Relu:0 (32, 62, 62, 128)    float32
+  layer  35: model/norm_second7/Identity_2:0 (32, 62, 62, 128)    float32
+  layer  36: model/conv_layer_second7/Relu:0 (32, 62, 62, 128)    float32
+  layer  37: model/norm8/Identity_2:0 (32, 62, 62, 128)    float32
+  layer  38: model/conv_layer8/Relu:0 (32, 31, 31, 256)    float32
+  layer  39: model/norm_second8/Identity_2:0 (32, 31, 31, 256)    float32
+  layer  40: model/conv_layer_second8/Relu:0 (32, 31, 31, 256)    float32
+  layer  41: model/pool_layer8:0  (32, 31, 31, 128)    float32
+  layer  42: model/lambda_layer8/Pad:0 (32, 31, 31, 256)    float32
+  layer  43: model/norm9/Identity_2:0 (32, 31, 31, 256)    float32
+  layer  44: model/conv_layer9/Relu:0 (32, 31, 31, 256)    float32
+  layer  45: model/norm_second9/Identity_2:0 (32, 31, 31, 256)    float32
+  layer  46: model/conv_layer_second9/Relu:0 (32, 31, 31, 256)    float32
+  layer  47: model/norm10/Identity_2:0 (32, 31, 31, 256)    float32
+  layer  48: model/conv_layer10/Relu:0 (32, 31, 31, 256)    float32
+  layer  49: model/norm_second10/Identity_2:0 (32, 31, 31, 256)    float32
+  layer  50: model/conv_layer_second10/Relu:0 (32, 31, 31, 256)    float32
+  layer  51: model/norm11/Identity_2:0 (32, 31, 31, 256)    float32
+  layer  52: model/conv_layer11/Relu:0 (32, 31, 31, 256)    float32
+  layer  53: model/norm_second11/Identity_2:0 (32, 31, 31, 256)    float32
+  layer  54: model/conv_layer_second11/Relu:0 (32, 31, 31, 256)    float32
+  layer  55: model/norm_last/Identity_2:0 (32, 31, 31, 256)    float32
+  layer  56: model/pool_last:0    (32, 3, 3, 256)    float32
+  layer  57: model/flatten:0      (32, 2304)         float32
+  layer  58: model/fc/Identity:0  (32, 2)            float32
+   learning_rate: 0.010000
+   batch_size: 32
+   n_epoch: 5000, step in an epoch: 2000, total n_step: 10000000
+Epoch 0 : Step 2000-4000 of 10000000 took 1039.617595s
+   train loss: 0.160823
+   train acc: 0.962859
+   test loss: 0.818570
+   test acc: 0.499563
+Epoch 1 : Step 4000-6000 of 10000000 took 1036.249283s
+   train loss: 0.108401
+   train acc: 0.955625
+   test loss: 0.719285
+   test acc: 0.498750
+Epoch 2 : Step 6000-8000 of 10000000 took 1036.748711s
+   train loss: 0.114390
+   train acc: 0.954063
+   test loss: 0.800898
+   test acc: 0.500812
+Epoch 3 : Step 8000-10000 of 10000000 took 1037.546685s
+   train loss: 0.115244
+   train acc: 0.952672
+   test loss: 0.727943
+   test acc: 0.499563
+Epoch 4 : Step 10000-12000 of 10000000 took 1037.916328s
+   train loss: 0.114112
+   train acc: 0.953125
+   test loss: 0.709465
+   test acc: 0.500062
+Epoch 5 : Step 12000-14000 of 10000000 took 1036.941008s
+   train loss: 0.114741
+   train acc: 0.953047
+   test loss: 0.709787
+   test acc: 0.502875
+Epoch 6 : Step 14000-16000 of 10000000 took 1040.011935s
+   train loss: 0.110733
+   train acc: 0.955297
+   test loss: 0.771813
+   test acc: 0.500125
+Epoch 7 : Step 16000-18000 of 10000000 took 1040.650414s
+   train loss: 0.111046
+   train acc: 0.952906
+   test loss: 0.740875
+   test acc: 0.499750
+Epoch 8 : Step 18000-20000 of 10000000 took 1039.623700s
+   train loss: 0.108958
+   train acc: 0.954859
+   test loss: 0.736985
+   test acc: 0.500250
+Epoch 9 : Step 20000-22000 of 10000000 took 1036.924438s
+   train loss: 0.109570
+   train acc: 0.954594
+   test loss: 0.837585
+   test acc: 0.501000
+Epoch 10 : Step 22000-24000 of 10000000 took 1036.865197s
+   train loss: 0.110617
+   train acc: 0.954875
+   test loss: 0.976544
+   test acc: 0.500000
+Epoch 11 : Step 24000-26000 of 10000000 took 1037.028739s
+   train loss: 0.112662
+   train acc: 0.955688
+   test loss: 0.740088
+   test acc: 0.500000
+Epoch 12 : Step 26000-28000 of 10000000 took 1036.810506s
+   train loss: 0.109448
+   train acc: 0.955203
+   test loss: 0.793087
+   test acc: 0.499875
+Epoch 13 : Step 28000-30000 of 10000000 took 1036.348485s
+   train loss: 0.110614
+   train acc: 0.954844
+   test loss: 0.760799
+   test acc: 0.500000
+Epoch 14 : Step 30000-32000 of 10000000 took 1038.483247s
+   train loss: 0.111978
+   train acc: 0.953875
+   test loss: 0.693310
+   test acc: 0.501375
+Epoch 15 : Step 32000-34000 of 10000000 took 1035.923478s
+   train loss: 0.108597
+   train acc: 0.955078
+   test loss: 0.716768
+   test acc: 0.500000
+Epoch 16 : Step 34000-36000 of 10000000 took 1036.704636s
+   train loss: 0.110727
+   train acc: 0.954781
+   test loss: 0.762649
+   test acc: 0.500313
+Epoch 17 : Step 36000-38000 of 10000000 took 1036.121042s
+   train loss: 0.108131
+   train acc: 0.955469
+   test loss: 0.812667
+   test acc: 0.500000
+Epoch 18 : Step 38000-40000 of 10000000 took 1035.647968s
+   train loss: 0.112171
+   train acc: 0.953828
+   test loss: 0.697015
+   test acc: 0.501875
+Epoch 19 : Step 40000-42000 of 10000000 took 1035.326225s
+   train loss: 0.108966
+   train acc: 0.954375
+   test loss: 0.723389
+   test acc: 0.500000
+Epoch 20 : Step 42000-44000 of 10000000 took 1035.032207s
+   train loss: 0.110818
+   train acc: 0.954766
+   test loss: 0.733182
+   test acc: 0.504938
+Epoch 21 : Step 44000-46000 of 10000000 took 1034.724770s
+   train loss: 0.107286
+   train acc: 0.956078
+   test loss: 0.741579
+   test acc: 0.500750
+Epoch 22 : Step 46000-48000 of 10000000 took 1034.243140s
+   train loss: 0.109661
+   train acc: 0.954750
+   test loss: 0.767439
+   test acc: 0.498250
+Epoch 23 : Step 48000-50000 of 10000000 took 1034.237702s
+   train loss: 0.107394
+   train acc: 0.956766
+   test loss: 0.711905
+   test acc: 0.502938
+Epoch 24 : Step 50000-52000 of 10000000 took 1033.992512s
+   train loss: 0.107047
+   train acc: 0.956547
+   test loss: 0.764925
