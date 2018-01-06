@@ -101,13 +101,13 @@ with tf.device('/cpu:0'):
         # only use 5*5 richmodel filter here
         F33 = list(map(filter_33to55, list_33))
 
-        Richmodel_filter = F33 + F55
-        Richmodel_num = len(Richmodel_filter)
+        # Richmodel_filter = F33 + F55
+        # Richmodel_num = len(Richmodel_filter)
 
         F55 = np.array([F55_Edge_1, F55_Edge_2, F55_Edge_3, F55_Edge_4, F55_Square], dtype=np.float32)
         Richmodel_num = len(F55)
         # assign numpy array to constant_initalizer and pass to get_variable
-        rich_filter = tf.constant_initializer(value=Richmodel_filter, dtype=tf.float32)
+        rich_filter = tf.constant_initializer(value=F55, dtype=tf.float32)
 
         # W_init = tf.contrib.layers.xavier_initializer_conv2d
         W_init = tf.truncated_normal_initializer(stddev=0.02)
@@ -130,6 +130,7 @@ with tf.device('/cpu:0'):
                          strides=(1, 1),
                          act=tf.nn.relu,
                          padding='VALID',
+                         W_init=W_init,
                          name='layer2_conv')
             net = Conv2d(net,
                          n_filter=30,
@@ -137,6 +138,7 @@ with tf.device('/cpu:0'):
                          strides=(1, 1),
                          act=tf.nn.relu,
                          padding='VALID',
+                         W_init=W_init,
                          name='layer3_conv')
             net = Conv2d(net,
                          n_filter=30,
@@ -144,6 +146,7 @@ with tf.device('/cpu:0'):
                          strides=(1, 1),
                          act=tf.nn.relu,
                          padding='VALID',
+                         W_init=W_init,
                          name='layer4_conv')
             net = PoolLayer(net,
                             ksize=[1, 2, 2, 1],
@@ -157,6 +160,7 @@ with tf.device('/cpu:0'):
                          strides=(1, 1),
                          act=tf.nn.relu,
                          padding='VALID',
+                         W_init=W_init,
                          name='layer5_conv')
             net = PoolLayer(net,
                             ksize=[1, 3, 3, 1],
@@ -170,6 +174,7 @@ with tf.device('/cpu:0'):
                          strides=(1, 1),
                          act=tf.nn.relu,
                          padding='VALID',
+                         W_init=W_init,
                          name='layer6_conv')
             net = PoolLayer(net,
                             ksize=[1, 3, 3, 1],
@@ -183,6 +188,7 @@ with tf.device('/cpu:0'):
                          strides=(1, 1),
                          act=tf.nn.relu,
                          padding='VALID',
+                         W_init=W_init,
                          name='layer7_conv')
             net = PoolLayer(net,
                             ksize=[1, 3, 3, 1],
@@ -196,6 +202,7 @@ with tf.device('/cpu:0'):
                          strides=(1, 1),
                          act=tf.nn.relu,
                          padding='VALID',
+                         W_init=W_init,
                          name='layer8_conv')
             net = Conv2d(net,
                          n_filter=16,
@@ -203,6 +210,7 @@ with tf.device('/cpu:0'):
                          strides=(1, 1),
                          act=tf.nn.relu,
                          padding='VALID',
+                         W_init=W_init,
                          name='layer9_conv')
             net = FlattenLayer(net, name='Flatten')
             net = DenseLayer(net,
@@ -214,6 +222,7 @@ with tf.device('/cpu:0'):
             net = DenseLayer(net,
                              n_units=2,
                              act=tf.identity,
+                             W_init=W_init,
                              name='Net_output')
         y = net.outputs
         cost = tl.cost.cross_entropy(y, y_, name='cost')

@@ -1,32 +1,14 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
-# @Time    : 2017/12/28 14:25
+# @Time    : 2017/01/06 10:32
 # @Author  : Shiyu Li
 # @Software: PyCharm
 
-import tensorflow as tf
+
 import tensorlayer as tl
 from tensorlayer.layers import *
 import numpy as np
 import time
-from richmodel_filter import *
-
-def read_and_decode(filename, img_size):
-    """ Return tensor to read from TFRecord """
-    filename_queue = tf.train.string_input_producer([filename])
-    reader = tf.TFRecordReader()
-    _, serialized_example = reader.read(filename_queue)
-    features = tf.parse_single_example(serialized_example,
-                                       features={  # replace your own features
-                                           'label': tf.FixedLenFeature([], tf.int64),
-                                           'img_raw': tf.FixedLenFeature([], tf.string),
-                                       })
-    img = tf.decode_raw(features['img_raw'], tf.uint8)
-    img = tf.reshape(img, img_size)
-    img = tf.cast(img, tf.float32)
-    label = tf.cast(features['label'], tf.int32)
-    return img, label
-
 
 def filter_33to55(array33):
     '''
@@ -60,19 +42,34 @@ def filter_33to55(array33):
 
     return array33
 
+def read_and_decode(filename, img_shape):
+    filename_queue = tf.train.string_input_producer([filename])
+    reader = tf.TFRecordReader()
+    _, serialized_example = reader.read(filename_queue)
+    features = tf.parse_single_example(serialized_example,
+                                       features={
+                                           'label': tf.FixedLenFeature([], tf.int64),
+                                           'img_raw': tf.FixedLenFeature([], tf.string),
+                                       })
+    img = tf.decode_raw(features['img_raw'], tf.uint8)
+    img = tf.reshape(img, img_shape)
+    img = tf.cast(img, tf.float32)  # if you want to use tfrecords as input.
+    label = tf.cast(features['label'], tf.int32)
+    return img, label
 
-## file params
+
 
 train_file = "train_CroppedBossBase-1.0-256x256_SUniward0.4bpp.tfrecords"
 test_file = "test_CroppedBossBase-1.0-256x256_SUniward0.4bpp.tfrecords"
-img_size = [256, 256, 1]
+img_shape= [256,256,1]
+
 
 ## train params
 
 train_num = sum(1 for _ in tf.python_io.tf_record_iterator(train_file))
 test_num = sum(1 for _ in tf.python_io.tf_record_iterator(test_file))
 
-batch_size = 32
+batch_size = 128
 n_epoch = 50000
 learning_rate = 0.01
 print_freq = 1
@@ -87,12 +84,12 @@ with tf.device('/cpu:0'):
     sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
     # prepare data in cpu
 
-    x_train_, y_train_ = read_and_decode(train_file, img_size)
+    x_train_, y_train_ = read_and_decode(train_file, img_shape)
     x_train_batch, y_train_batch = tf.train.shuffle_batch([x_train_, y_train_],
                                                           batch_size=batch_size, capacity=2000,
                                                           min_after_dequeue=1000)  # , num_threads=32) # set the number of threads here
 
-    x_test_, y_test_ = read_and_decode(test_file, img_size)
+    x_test_, y_test_ = read_and_decode(test_file, img_shape)
     x_test_batch, y_test_batch = tf.train.batch([x_test_, y_test_],
                                                 batch_size=batch_size, capacity=50000)  # , num_threads=32)
 
@@ -223,13 +220,15 @@ with tf.device('/cpu:0'):
         return net, cost, acc
 
 
+
     with tf.device('/gpu:0'):
         network, cost, acc, = model(x_train_batch, y_train_batch, False)
         _, cost_test, acc_test = model(x_test_batch, y_test_batch, True)
 
-    train_vars = network.all_params
 
-    with tf.device('/gpu:0'):
+    train_vars = network.all_params()
+
+    with tf.device('/gpu:0'):  # <-- remove it if you don't have GPU
         train_op = tf.train.AdamOptimizer(
             learning_rate, use_locking=False).minimize(cost, var_list=train_vars)
 
@@ -253,7 +252,7 @@ with tf.device('/cpu:0'):
 
         if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
             print("Epoch %d : Step %d-%d of %d took %fs" % (
-                epoch, step, step + n_step_epoch, n_step, time.time() - start_time))
+            epoch, step, step + n_step_epoch, n_step, time.time() - start_time))
             print("   train loss: %f" % (train_loss / n_batch))
             print("   train acc: %f" % (train_acc / n_batch))
 
