@@ -101,13 +101,13 @@ with tf.device('/cpu:0'):
         # only use 5*5 richmodel filter here
         F33 = list(map(filter_33to55, list_33))
 
-        Richmodel_filter = F33 + F55
-        Richmodel_num = len(Richmodel_filter)
+        # Richmodel_filter = F33 + F55
+        # Richmodel_num = len(Richmodel_filter)
 
         F55 = np.array([F55_Edge_1, F55_Edge_2, F55_Edge_3, F55_Edge_4, F55_Square], dtype=np.float32)
         Richmodel_num = len(F55)
         # assign numpy array to constant_initalizer and pass to get_variable
-        rich_filter = tf.constant_initializer(value=Richmodel_filter, dtype=tf.float32)
+        rich_filter = tf.constant_initialigitzer(value=F55, dtype=tf.float32)
 
         # W_init = tf.contrib.layers.xavier_initializer_conv2d
         W_init = tf.truncated_normal_initializer(stddev=0.02)

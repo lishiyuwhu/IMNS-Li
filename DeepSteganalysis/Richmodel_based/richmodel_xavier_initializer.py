@@ -9,6 +9,8 @@ import tensorlayer as tl
 from tensorlayer.layers import *
 import numpy as np
 import time
+import richmodel_filter as rm
+
 
 def filter_33to55(array33):
     '''
@@ -42,6 +44,7 @@ def filter_33to55(array33):
 
     return array33
 
+
 def read_and_decode(filename, img_shape):
     filename_queue = tf.train.string_input_producer([filename])
     reader = tf.TFRecordReader()
@@ -58,11 +61,9 @@ def read_and_decode(filename, img_shape):
     return img, label
 
 
-
 train_file = "train_CroppedBossBase-1.0-256x256_SUniward0.4bpp.tfrecords"
 test_file = "test_CroppedBossBase-1.0-256x256_SUniward0.4bpp.tfrecords"
-img_shape= [256,256,1]
-
+img_shape = [256, 256, 1]
 
 ## train params
 
@@ -70,7 +71,7 @@ train_num = sum(1 for _ in tf.python_io.tf_record_iterator(train_file))
 test_num = sum(1 for _ in tf.python_io.tf_record_iterator(test_file))
 
 batch_size = 128
-n_epoch = 50000
+n_epoch = 500
 learning_rate = 0.01
 print_freq = 1
 n_step_epoch = int(train_num / batch_size)
@@ -95,21 +96,18 @@ with tf.device('/cpu:0'):
 
 
     def model(x_crop, y_, reuse):
-        # only use 5*5 richmodel filter here
-        F33 = list(map(filter_33to55, list_33))
 
-        Richmodel_filter = F33 + F55
-        Richmodel_num = len(Richmodel_filter)
+        F55 = rm.list_33
+        F33 = rm.list_33
+        Filter = F55 + F33
+        Filter = np.array(Filter, dtype=np.float32)
 
-        F55 = np.array([F55_Edge_1, F55_Edge_2, F55_Edge_3, F55_Edge_4, F55_Square], dtype=np.float32)
-        Richmodel_num = len(F55)
-        # assign numpy array to constant_initalizer and pass to get_variable
-        rich_filter = tf.constant_initializer(value=Richmodel_filter, dtype=tf.float32)
+        Richmodel_num_55 = len(F55)
+        Richmodel_num_33 = len(F33)
 
-        # W_init = tf.contrib.layers.xavier_initializer_conv2d
-        W_init = tf.truncated_normal_initializer(stddev=0.02)
-        W_init2 = tf.truncated_normal_initializer(stddev=0.04)
-        b_init2 = tf.constant_initializer(value=0.1)
+        Richmodel_num = Richmodel_num_33 + Richmodel_num_55
+        rich_filter = tf.constant_initializer(value=Filter, dtype=tf.float32)
+
         with tf.variable_scope("model", reuse=reuse):
             tl.layers.set_name_reuse(reuse)
             net = InputLayer(x_crop, name='inputlayer')
@@ -121,92 +119,99 @@ with tf.device('/cpu:0'):
                               W_init=rich_filter,
                               b_init=tf.constant_initializer(value=0.0),
                               name='layer1_richmodel_filter')
-            net = Conv2d(net,
-                         n_filter=30,
-                         filter_size=(3, 3),
-                         strides=(1, 1),
-                         act=tf.nn.relu,
-                         padding='VALID',
-                         name='layer2_conv')
-            net = Conv2d(net,
-                         n_filter=30,
-                         filter_size=(3, 3),
-                         strides=(1, 1),
-                         act=tf.nn.relu,
-                         padding='VALID',
-                         name='layer3_conv')
-            net = Conv2d(net,
-                         n_filter=30,
-                         filter_size=(3, 3),
-                         strides=(1, 1),
-                         act=tf.nn.relu,
-                         padding='VALID',
-                         name='layer4_conv')
+            net = Conv2dLayer(net,
+                              act=tf.nn.relu,
+                              shape=[3, 3, Richmodel_num, 30],
+                              strides=[1, 1, 1, 1],
+                              padding='VALID',
+                              W_init=tf.contrib.layers.xavier_initializer(),
+                              b_init=tf.constant_initializer(value=0.2),
+                              name='layer2_conv')
+            net = Conv2dLayer(net,
+                              act=tf.nn.relu,
+                              shape=[3, 3, 30, 30],
+                              strides=[1, 1, 1, 1],
+                              padding='VALID',
+                              W_init=tf.contrib.layers.xavier_initializer(),
+                              b_init=tf.constant_initializer(value=0.2),
+                              name='layer3_conv')
+            net = Conv2dLayer(net,
+                              act=tf.nn.relu,
+                              shape=[3, 3, 30, 30],
+                              strides=[1, 1, 1, 1],
+                              padding='VALID',
+                              W_init=tf.contrib.layers.xavier_initializer(),
+                              b_init=tf.constant_initializer(value=0.2),
+                              name='layer4_conv')
+
             net = PoolLayer(net,
                             ksize=[1, 2, 2, 1],
                             strides=[1, 2, 2, 1],
                             padding='VALID',
                             pool=tf.nn.avg_pool,
                             name='layer4_pool')
-            net = Conv2d(net,
-                         n_filter=32,
-                         filter_size=(5, 5),
-                         strides=(1, 1),
-                         act=tf.nn.relu,
-                         padding='VALID',
-                         name='layer5_conv')
+            net = Conv2dLayer(net,
+                              act=tf.nn.relu,
+                              shape=[5, 5, 30, 32],
+                              strides=[1, 1, 1, 1],
+                              padding='VALID',
+                              W_init=tf.contrib.layers.xavier_initializer(),
+                              b_init=tf.constant_initializer(value=0.2),
+                              name='layer5_conv')
             net = PoolLayer(net,
                             ksize=[1, 3, 3, 1],
                             strides=[1, 2, 2, 1],
                             padding='VALID',
                             pool=tf.nn.avg_pool,
                             name='layer5_pool')
-            net = Conv2d(net,
-                         n_filter=32,
-                         filter_size=(5, 5),
-                         strides=(1, 1),
-                         act=tf.nn.relu,
-                         padding='VALID',
-                         name='layer6_conv')
+            net = Conv2dLayer(net,
+                              act=tf.nn.relu,
+                              shape=[5, 5, 32, 32],
+                              strides=[1, 1, 1, 1],
+                              padding='VALID',
+                              W_init=tf.contrib.layers.xavier_initializer(),
+                              b_init=tf.constant_initializer(value=0.2),
+                              name='layer6_conv')
             net = PoolLayer(net,
                             ksize=[1, 3, 3, 1],
                             strides=[1, 2, 2, 1],
                             padding='VALID',
                             pool=tf.nn.avg_pool,
                             name='layer6_pool')
-            net = Conv2d(net,
-                         n_filter=32,
-                         filter_size=(5, 5),
-                         strides=(1, 1),
-                         act=tf.nn.relu,
-                         padding='VALID',
-                         name='layer7_conv')
+            net = Conv2dLayer(net,
+                              act=tf.nn.relu,
+                              shape=[5, 5, 32, 32],
+                              strides=[1, 1, 1, 1],
+                              padding='VALID',
+                              W_init=tf.contrib.layers.xavier_initializer(),
+                              b_init=tf.constant_initializer(value=0.2),
+                              name='layer7_conv')
             net = PoolLayer(net,
                             ksize=[1, 3, 3, 1],
                             strides=[1, 2, 2, 1],
                             padding='VALID',
                             pool=tf.nn.avg_pool,
                             name='layer7_pool')
-            net = Conv2d(net,
-                         n_filter=16,
-                         filter_size=(3, 3),
-                         strides=(1, 1),
-                         act=tf.nn.relu,
-                         padding='VALID',
-                         name='layer8_conv')
-            net = Conv2d(net,
-                         n_filter=16,
-                         filter_size=(3, 3),
-                         strides=(1, 1),
-                         act=tf.nn.relu,
-                         padding='VALID',
-                         name='layer9_conv')
+            net = Conv2dLayer(net,
+                              act=tf.nn.relu,
+                              shape=[3, 3, 32, 16],
+                              strides=[1, 1, 1, 1],
+                              padding='VALID',
+                              W_init=tf.contrib.layers.xavier_initializer(),
+                              b_init=tf.constant_initializer(value=0.2),
+                              name='layer8_conv')
+            net = Conv2dLayer(net,
+                              act=tf.nn.relu,
+                              shape=[3, 3, 16, 16],
+                              strides=[1, 1, 1, 1],
+                              padding='VALID',
+                              W_init=tf.contrib.layers.xavier_initializer(),
+                              b_init=tf.constant_initializer(value=0.2),
+                              name='layer9_conv')
             net = FlattenLayer(net, name='Flatten')
             net = DenseLayer(net,
                              n_units=10,
                              act=tf.nn.relu,
-                             W_init=W_init2,
-                             b_init=b_init2,
                              name='Fully_connected')
             net = DenseLayer(net,
                              n_units=2,
@@ -220,13 +225,11 @@ with tf.device('/cpu:0'):
         return net, cost, acc
 
 
-
     with tf.device('/gpu:0'):
         network, cost, acc, = model(x_train_batch, y_train_batch, False)
         _, cost_test, acc_test = model(x_test_batch, y_test_batch, True)
 
-
-    train_vars = network.all_params()
+    train_vars = network.all_params
 
     with tf.device('/gpu:0'):  # <-- remove it if you don't have GPU
         train_op = tf.train.AdamOptimizer(
@@ -252,7 +255,7 @@ with tf.device('/cpu:0'):
 
         if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
             print("Epoch %d : Step %d-%d of %d took %fs" % (
-            epoch, step, step + n_step_epoch, n_step, time.time() - start_time))
+                epoch, step, step + n_step_epoch, n_step, time.time() - start_time))
             print("   train loss: %f" % (train_loss / n_batch))
             print("   train acc: %f" % (train_acc / n_batch))
 
