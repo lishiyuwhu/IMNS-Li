@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
-# @Time    : 2017/01/06 10:32
+# @Time    : 2017/01/08 15:41
 # @Author  : Shiyu Li
 # @Software: PyCharm
 
@@ -61,9 +61,9 @@ def read_and_decode(filename, img_shape):
     return img, label
 
 
-train_file = "train_CroppedBossBase-1.0-256x256_SUniward0.4bpp.tfrecords"
-test_file = "test_CroppedBossBase-1.0-256x256_SUniward0.4bpp.tfrecords"
-img_shape = [256, 256, 1]
+train_file = "train_Mnist_pgm.tfrecords"
+test_file = "test_Mnist_pgm.tfrecords"
+img_shape = [28, 28, 1]
 
 ## train params
 
@@ -88,7 +88,7 @@ with tf.device('/cpu:0'):
     x_train_, y_train_ = read_and_decode(train_file, img_shape)
     x_train_batch, y_train_batch = tf.train.shuffle_batch([x_train_, y_train_],
                                                           batch_size=batch_size, capacity=2000,
-                                                          min_after_dequeue=1000)
+                                                          min_after_dequeue=1000)  # , num_threads=32) # set the number of threads here
 
     x_test_, y_test_ = read_and_decode(test_file, img_shape)
     x_test_batch, y_test_batch = tf.train.batch([x_test_, y_test_],
@@ -127,23 +127,6 @@ with tf.device('/cpu:0'):
                               W_init=tf.contrib.layers.xavier_initializer(),
                               b_init=tf.constant_initializer(value=0.2),
                               name='layer2_conv')
-            # net = Conv2dLayer(net,
-            #                   act=tf.nn.relu,
-            #                   shape=[3, 3, 30, 30],
-            #                   strides=[1, 1, 1, 1],
-            #                   padding='VALID',
-            #                   W_init=tf.contrib.layers.xavier_initializer(),
-            #                   b_init=tf.constant_initializer(value=0.2),
-            #                   name='layer3_conv')
-            # net = Conv2dLayer(net,
-            #                   act=tf.nn.relu,
-            #                   shape=[3, 3, 30, 30],
-            #                   strides=[1, 1, 1, 1],
-            #                   padding='VALID',
-            #                   W_init=tf.contrib.layers.xavier_initializer(),
-            #                   b_init=tf.constant_initializer(value=0.2),
-            #                   name='layer4_conv')
-
             net = PoolLayer(net,
                             ksize=[1, 2, 2, 1],
                             strides=[1, 2, 2, 1],
@@ -164,57 +147,13 @@ with tf.device('/cpu:0'):
                             padding='VALID',
                             pool=tf.nn.avg_pool,
                             name='layer5_pool')
-            # net = Conv2dLayer(net,
-            #                   act=tf.nn.relu,
-            #                   shape=[5, 5, 32, 32],
-            #                   strides=[1, 1, 1, 1],
-            #                   padding='VALID',
-            #                   W_init=tf.contrib.layers.xavier_initializer(),
-            #                   b_init=tf.constant_initializer(value=0.2),
-            #                   name='layer6_conv')
-            # net = PoolLayer(net,
-            #                 ksize=[1, 3, 3, 1],
-            #                 strides=[1, 2, 2, 1],
-            #                 padding='VALID',
-            #                 pool=tf.nn.avg_pool,
-            #                 name='layer6_pool')
-            # net = Conv2dLayer(net,
-            #                   act=tf.nn.relu,
-            #                   shape=[5, 5, 32, 32],
-            #                   strides=[1, 1, 1, 1],
-            #                   padding='VALID',
-            #                   W_init=tf.contrib.layers.xavier_initializer(),
-            #                   b_init=tf.constant_initializer(value=0.2),
-            #                   name='layer7_conv')
-            # net = PoolLayer(net,
-            #                 ksize=[1, 3, 3, 1],
-            #                 strides=[1, 2, 2, 1],
-            #                 padding='VALID',
-            #                 pool=tf.nn.avg_pool,
-            #                 name='layer7_pool')
-            # net = Conv2dLayer(net,
-            #                   act=tf.nn.relu,
-            #                   shape=[3, 3, 32, 16],
-            #                   strides=[1, 1, 1, 1],
-            #                   padding='VALID',
-            #                   W_init=tf.contrib.layers.xavier_initializer(),
-            #                   b_init=tf.constant_initializer(value=0.2),
-            #                   name='layer8_conv')
-            net = Conv2dLayer(net,
-                              act=tf.nn.relu,
-                              shape=[3, 3, 32, 16],#[3, 3, 16, 16],
-                              strides=[1, 1, 1, 1],
-                              padding='VALID',
-                              W_init=tf.contrib.layers.xavier_initializer(),
-                              b_init=tf.constant_initializer(value=0.2),
-                              name='layer9_conv')
             net = FlattenLayer(net, name='Flatten')
             net = DenseLayer(net,
                              n_units=100,
                              act=tf.nn.relu,
                              name='Fully_connected')
             net = DenseLayer(net,
-                             n_units=2,
+                             n_units=10,
                              act=tf.identity,
                              name='Net_output')
         y = net.outputs
