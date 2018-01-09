@@ -14,6 +14,9 @@ import time
 #     main()
 
 
+# lrelu
+lrelu = lambda x: tl.act.lrelu(x, 0.2)
+
 # prelu
 def prelu(_x, scope=None):
     """parametric ReLU activation"""
