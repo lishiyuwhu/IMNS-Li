@@ -64,13 +64,38 @@ with tf.device('/cpu:0'):
         W_init = tf.truncated_normal_initializer(stddev=1 / 192.0)
         W_init2 = tf.truncated_normal_initializer(stddev=0.04)
         b_init2 = tf.constant_initializer(value=0.1)
+        F55 = rm.list_33
+        F33 = rm.list_33
+        Filter = F55 + F33
+        Filter = np.array(Filter, dtype=np.float32)
+
+        Richmodel_num_55 = len(F55)
+        Richmodel_num_33 = len(F33)
+
+        Richmodel_num = Richmodel_num_33 + Richmodel_num_55
+        rich_filter = tf.constant_initializer(value=Filter, dtype=tf.float32)
+
         with tf.variable_scope("model", reuse=reuse):
             tl.layers.set_name_reuse(reuse)
-            net = InputLayer(x_crop, name='train_input_layer')
+            net = InputLayer(x_crop, name='inputlayer')
+            net = Conv2dLayer(net,
+                              act=tf.identity,
+                              shape=[5, 5, 1, Richmodel_num],
+                              strides=[1, 1, 1, 1],
+                              padding='VALID',
+                              W_init=rich_filter,
+                              b_init=tf.constant_initializer(value=0.0),
+                              name='layer1_richmodel_filter')
+            net = Conv2dLayer(net,
+                              act=tf.nn.relu,
+                              shape=[3, 3, Richmodel_num, 30],
+                              strides=[1, 1, 1, 1],
+                              padding='VALID',
+                              W_init=tf.contrib.layers.xavier_initializer(),
+                              b_init=tf.constant_initializer(value=0.2),
+                              name='layer2_conv')
             net = Conv2d(net, 64, (5, 5), (2, 2), act=tf.nn.relu,
                          padding='VALID', W_init=W_init, name='train_CONV1')
-            net = Conv2d(net, 16, (3, 3), (2, 2), act=tf.nn.relu,
-                         padding='VALID', W_init=W_init, name='train_CONV2')
             net = FlattenLayer(net, name='train_Flatten')
             net = DenseLayer(net, n_units=100, act=tf.nn.relu,
                              W_init=W_init2, b_init=b_init2, name='train_FC1')
