@@ -3,7 +3,7 @@
 # @Time    : 2017/12/19 9:29
 # @Author  : Shiyu Li
 # @Software: PyCharm
-
+# Thanks. https://github.com/ritchieng/wideresnet-tensorlayer
 
 import tensorlayer as tl
 from tensorlayer.layers import *
@@ -23,7 +23,7 @@ def read_and_decode(filename, is_train=None):
                                        })
     img = tf.decode_raw(features['img_raw'], tf.uint8)
     img = tf.reshape(img, [256, 256, 1])
-    img = tf.cast(img, tf.float32) * (1. / 255) - 0.5
+    img = tf.cast(img, tf.float32)
     if is_train == True:
         img = tf.random_crop(img, [128, 128, 1])
 
@@ -92,7 +92,7 @@ with tf.device('/cpu:0'):
         return tf.pad(x, pattern)
 
 
-    def residual_block(x, count, nb_filters=16, subsample_factor=1):
+    def residual_block(x, count, nb_filters=16, subsample_factor=1, is_train=True):
         prev_nb_channels = x.outputs.get_shape().as_list()[3]
 
         if subsample_factor > 1:
@@ -138,7 +138,7 @@ with tf.device('/cpu:0'):
         y = tl.layers.BatchNormLayer(y,
                                      decay=0.999,
                                      epsilon=1e-05,
-                                     is_train=True,
+                                     is_train=is_train,
                                      name=name_norm_2)
 
         prev_input_channels = y.outputs.get_shape().as_list()[3]
@@ -157,7 +157,7 @@ with tf.device('/cpu:0'):
         return out
 
 
-    def wide_res_model(x_crop, y_, reuse):
+    def wide_res_model(x_crop, y_, reuse, is_train):
         with tf.variable_scope("model", reuse=reuse):
             tl.layers.set_name_reuse(reuse)
 
@@ -167,7 +167,6 @@ with tf.device('/cpu:0'):
                            [2, -6, 8, -6, 2],
                            [-1, 2, -2, 2, -1]], dtype=np.float32)
             F0 = F0 / 12.
-            # assign numpy array to constant_initalizer and pass to get_variable
             high_pass_filter = tf.constant_initializer(value=F0, dtype=tf.float32)
             net = InputLayer(x_crop, name='input')
             net = Conv2d(net, 1, (5, 5), (1, 1), act=tf.identity,
@@ -190,7 +189,7 @@ with tf.device('/cpu:0'):
                 else:
                     subsample_factor = 1
                 count = i + blocks_per_group
-                net = residual_block(net, count, nb_filters=nb_filters, subsample_factor=subsample_factor)
+                net = residual_block(net, count, nb_filters=nb_filters, subsample_factor=subsample_factor, is_train=is_train)
 
             for i in range(0, blocks_per_group):
                 nb_filters = 64 * widening_factor
@@ -199,12 +198,12 @@ with tf.device('/cpu:0'):
                 else:
                     subsample_factor = 1
                 count = i + 2 * blocks_per_group
-                net = residual_block(net, count, nb_filters=nb_filters, subsample_factor=subsample_factor)
+                net = residual_block(net, count, nb_filters=nb_filters, subsample_factor=subsample_factor,is_train=is_train)
 
             net = tl.layers.BatchNormLayer(net,
                                            decay=0.999,
                                            epsilon=1e-05,
-                                           is_train=True,
+                                           is_train=is_train,
                                            name='norm_last')
 
             net = tl.layers.PoolLayer(net,
@@ -232,8 +231,8 @@ with tf.device('/cpu:0'):
 
 
     with tf.device('/gpu:0'):
-        network, cost, acc, = wide_res_model(x_train_batch, y_train_batch, None)
-        _, cost_test, acc_test = wide_res_model(x_test_batch, y_test_batch, True)
+        network, cost, acc, = wide_res_model(x_train_batch, y_train_batch, False, is_train=True)
+        _, cost_test, acc_test = wide_res_model(x_test_batch, y_test_batch, True, is_train=False)
 
     ## train
     n_epoch = 5000
