@@ -1,3 +1,6 @@
+ - GAN做cover 加噪声
+ - GAN做隐写
+
  - 先固定richfilter去train后面, 待稳定之后再去train richfilter
  - 隐写方法作为domain knowledge
  - corp的选择

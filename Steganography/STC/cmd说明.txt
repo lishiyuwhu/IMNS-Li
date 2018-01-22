@@ -1,0 +1,33 @@
+embed
+
+
+-k 密钥
+-m 输入文件
+-r 嵌入率
+-i 输入cover图像
+-o 输出stego图像
+
+extract
+
+
+-k 密钥
+-m 提取文件
+-i 输入图像
+
+
+---
+
+
+STC_ebed -k 1234  -r 50 -i C:\Users\luSir\Desktop\temp.jpg -o test.jpg
+pause
+
+
+STC_ebed -k 1234 -m cmd说明.txt -r 50 -i E:\DV2\2_rer_50\test\STC编码嵌入与提取-EBS\temp.jpg -o test.jpg
+
+STC_ebed -k 1234 -m message.txt -r 50 -i C:\Users\Li\Desktop\Steganography\STC\IMG\cover.jpg -o C:\Users\Li\Desktop\Steganography\STC\IMG\stego.jpg
+pause
+---
+
+
+STC_extract -k 1234 -m new.txt -i C:\Users\Li\Desktop\Steganography\STC\IMG\stego.jpg
+pause
