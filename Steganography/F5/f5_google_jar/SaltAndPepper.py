@@ -24,6 +24,6 @@ def SaltAndPepper(src,percetage):
     return NoiseImg
 
 if __name__ == '__main__':
-    img = cv2.imread('stego_.jpg')
-    NoiseImg = SaltAndPepper(img, 0)
-    cv2.imwrite('stego.jpg', NoiseImg, [cv2.IMWRITE_JPEG_QUALITY, 100])
+    img = cv2.imread('out_.jpg')
+    NoiseImg = SaltAndPepper(img, 0.01)
+    cv2.imwrite('out.jpg', NoiseImg, [cv2.IMWRITE_JPEG_QUALITY, 100])

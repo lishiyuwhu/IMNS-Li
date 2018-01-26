@@ -1,7 +1,7 @@
 import unittest
 import sys, os
 import time
-import StringIO
+from io import StringIO
 import struct
 import jpype
 import optparse
