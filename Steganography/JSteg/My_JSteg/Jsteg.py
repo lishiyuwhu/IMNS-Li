@@ -24,52 +24,35 @@ class JSteg:
         self.row = 0
         self.col = 0
         self.available_info_len = 0
+        self.encode_img = None
         self.decode_img = None
 
     def set_img(self, input_img):
-        self.img = cv2.imread(input_img, flags=0)
+        self.img = cv2.imread(input_img, flags=0).astype(np.float32)
         row, col = self.img.shape
         if not( (row/8).is_integer() and (col/8).is_integer()):
             print('像素横纵要为8的倍数')
-            self.dct = self.img[:int(row/8)*8, :int(col/8)*8].astype(np.float32)
-            row, col = self.dct.shape
+            self.img = self.img[:int(row/8)*8, :int(col/8)*8]
+            row, col = self.img.shape
             print('已裁剪为%d * %d' % row, col)
-        else:
-            self.dct = self.img.astype(np.float32)
-            
         self.row = row
         self.col = col
-        for i in range(0, row, 8):
-            for j in range(0, col, 8):
-                # 也可以用np.lib.stride_tricks.as_strided(sudoku, shape=shape, strides=strides) 
-                temp = self.dct[ i:i+8 , j:j+8 ]
-                temp_ = temp.astype(np.float32)-128
-                temp_dct = cv2.dct(temp_)
-                self.dct[ i:i+8 , j:j+8 ] = temp_dct
-                
-    
-    def quantify(self):
-        qu_array = np.array([[16,11,10,16,1,1,1,1],
-                            [12,12,14,1,1,1,1,55],
-                            [14,13,1,1,1,1,69,56],
-                            [14,1,1,1,1,87,80,62],
-                            [1,1,1,1,68,109,109,77],
-                            [1,1,1,64,81,104,104,92],
-                            [1,1,78,87,103,121,121,101],
-                            [1,92,95,98,112,100,100,99]])
-        self.dct_quantified = self.dct
-        for i in range(0, self.row, 8):
-            for j in range(0, self.col, 8):
-                temp = self.dct[ i:i+8 , j:j+8 ]
-                #也可以直接舍去小数部分
-                temp = np.around(temp/qu_array)
-                self.dct[ i:i+8 , j:j+8 ] = temp
+
+
+    def write(self, pgm_file):
+        # DCT & quantify
+        array = self.img
+        array = dct(array)
+        self.dct = array
+        array = quantify(array)
+        self.dct_quantified = array
+        self.dct_quantified = self.dct_quantified.flatten()
         
-        self.available_info_len = (self.dct_quantified != 0).sum() + (self.dct_quantified !=1).sum()
-        print('available_info_len = %d' % self.available_info_len)
-                
-    def write(self, pgm_info):
-        info_len = self.col * self.row
+        
+        pgm = cv2.imread(pgm_file, 0)
+        pgm_info = np.where(pgm>127, 1,0 )
+
+        info_len = pgm.shape[0] * pgm.shape[1]
         info_index = 0
         info = pgm_info.flatten()
         while True:
@@ -79,10 +62,44 @@ class JSteg:
                 for j in range(self.col):
                     if self._write((i,j), info[info_index]):
                         info_index += 1
+                        
+        self.encode_img = self.dct_quantified().resize([self.row,self.col])
+        self.encode_img = i_quantify(self.encode_img)
+        self.encode_img = idct(self.encode_img)
+        self.encode_img = self.encode_img.astype(np.uint8)
         
         
 
-    def _write(self, index, data):
+
+    def read(self, row,col):
+        info_len = row*col
+        # DCT & quantify
+        array = self.img
+        array = dct(array)
+        self.dct = array
+        array = quantify(array)
+        self.dct_quantified = array
+        
+        info = []
+        info_index = 0
+        self.dct_quantified = self.dct_quantified.flatten()
+        while True:
+            if info_index >= info_len:
+                break
+            data = self._read(sequence_index)
+            if data != None:
+                info.append(data)
+                info_index += 1
+            sequence_index += 1
+        
+        info = np.array(info)
+        info =info.astype(np.uint8).resize([row,col])*255
+        
+        self.decode_img = info
+        
+
+# ====
+    def _write(self, index, data):        
         origin = self.dct_quantified[index]
         if origin in (-1, 1, 0):
             return False
@@ -98,122 +115,69 @@ class JSteg:
             if (lower_bit, data) == (0, 1):
                 self.dct_quantified[index] = origin - 1
             elif (lower_bit, data) == (1, 0):
-                self.dct_quantified[index] = origin + 1        
-                
-
-    def read(self, row,col):
+                self.dct_quantified[index] = origin + 1    
+ 
         
-
-
-
-'''
-class Jsteg:
-    def __init__(self):
-        self.sequence_after_dct = None
-
-    def set_sequence_after_dct(self, sequence_after_dct):
-        self.sequence_after_dct = sequence_after_dct
-        self.available_info_len = len([i for i in self.sequence_after_dct if i not in (-1, 1, 0)])  # 不是绝对可靠的
-        print("Load>> 可嵌入", self.available_info_len, 'bits')
-
-    def get_sequence_after_dct(self):
-        return self.sequence_after_dct
-
-    def write(self, info):
-        """先嵌入信息的长度，然后嵌入信息"""
-        info = self._set_info_len(info)
-        info_len = len(info)
-        info_index = 0
-        im_index = 0
-        while True:
-            if info_index >= info_len:
-                break
-            data = info[info_index]
-            if self._write(im_index, data):
-                info_index += 1
-            im_index += 1
-
-    def read(self):
-        """先读出信息的长度，然后读出信息"""
-        _len, sequence_index = self._get_info_len()
-        info = []
-        info_index = 0
-
-        while True:
-            if info_index >= _len:
-                break
-            data = self._read(sequence_index)
-            if data != None:
-                info.append(data)
-                info_index += 1
-            sequence_index += 1
-
-        return info
-
-    # ===============================================================#
-
-    def _set_info_len(self, info):
-        l = int(math.log(self.available_info_len, 2)) + 1
-        info_len = [0] * l
-        _len = len(info)
-        info_len[-len(bin(_len)) + 2:] = [int(i) for i in bin(_len)[2:]]
-        return info_len + info
-
-    def _get_info_len(self):
-        l = int(math.log(self.available_info_len, 2)) + 1
-        len_list = []
-        _l_index = 0
-        _seq_index = 0
-        while True:
-            if _l_index >= l:
-                break
-            _d = self._read(_seq_index)
-            if _d != None:
-                len_list.append(str(_d))
-                _l_index += 1
-            _seq_index += 1
-        _len = ''.join(len_list)
-        _len = int(_len, 2)
-        return _len, _seq_index
-
-    def _write(self, index, data):
-        origin = self.sequence_after_dct[index]
-        if origin in (-1, 1, 0):
-            return False
-
-        lower_bit = origin % 2
-        if lower_bit == data:
-            pass
-        elif origin > 0:
-            if (lower_bit, data) == (0, 1):
-                self.sequence_after_dct[index] = origin + 1
-            elif (lower_bit, data) == (1, 0):
-                self.sequence_after_dct[index] = origin - 1
-        elif origin < 0:
-            if (lower_bit, data) == (0, 1):
-                self.sequence_after_dct[index] = origin - 1
-            elif (lower_bit, data) == (1, 0):
-                self.sequence_after_dct[index] = origin + 1
-
-        return True
-
-    def _read(self, index):
-        if self.sequence_after_dct[index] not in (-1, 1, 0):
-            return self.sequence_after_dct[index] % 2
+     def _read(self, index):
+        if self.dct_quantified[index] not in (-1, 1, 0):
+            return self.dct_quantified[index] % 2
         else:
-            return None
+            return None               
+                
+    def dct(self, full_array):
+        row, col = full_array.shape
+        full_array = full_array-128
+        for i in range(0, row, 8):
+            for j in range(0, col, 8):
+                # 也可以用np.lib.stride_tricks.as_strided(sudoku, shape=shape, strides=strides) 
+                temp = full_array[ i:i+8 , j:j+8 ]
+                full_array[ i:i+8 , j:j+8 ] = cv2.dct(temp)
+                
+    def idct(self, full_array):
+        row, col = full_array.shape
+        for i in range(0, row, 8):
+            for j in range(0, col, 8):
+                # 也可以用np.lib.stride_tricks.as_strided(sudoku, shape=shape, strides=strides) 
+                temp = full_array[ i:i+8 , j:j+8 ]
+                full_array[ i:i+8 , j:j+8 ] = cv2.idct(temp)
+                
+        full_array = full_array + 128
+    
 
+    def quantify(self, full_array):
+        row, col = full_array.shape
+        qu_array = np.array([[16,11,10,16,1,1,1,1],
+                            [12,12,14,1,1,1,1,55],
+                            [14,13,1,1,1,1,69,56],
+                            [14,1,1,1,1,87,80,62],
+                            [1,1,1,1,68,109,109,77],
+                            [1,1,1,64,81,104,104,92],
+                            [1,1,78,87,103,121,121,101],
+                            [1,92,95,98,112,100,100,99]])
+        for i in range(0, row, 8):
+            for j in range(0, col, 8):
+                temp = full_array[ i:i+8 , j:j+8 ]
+                full_array[ i:i+8 , j:j+8 ] = np.around(temp/qu_array)
+        self.dct_quantified = full_array
+        
+        
+        
+        self.available_info_len = (full_array != 0).sum() + (full_array !=1).sum()
+        print('available_info_len = %d' % self.available_info_len)
+                
+        
+    def i_quantify(self, full_array):
+        row, col = full_array.shape
+        qu_array = np.array([[16,11,10,16,1,1,1,1],
+                            [12,12,14,1,1,1,1,55],
+                            [14,13,1,1,1,1,69,56],
+                            [14,1,1,1,1,87,80,62],
+                            [1,1,1,1,68,109,109,77],
+                            [1,1,1,64,81,104,104,92],
+                            [1,1,78,87,103,121,121,101],
+                            [1,92,95,98,112,100,100,99]])
+        for i in range(0, row, 8):
+            for j in range(0, col, 8):
+                temp = full_array[ i:i+8 , j:j+8 ]
+                full_array[ i:i+8 , j:j+8 ] = np.around(temp*qu_array)
 
-if __name__ == "__main__":
-    jsteg = Jsteg()
-    # 写
-    sequence_after_dct = [-1, 0, 1] * 100 + [i for i in range(-7, 500)]
-    jsteg.set_sequence_after_dct(sequence_after_dct)
-    info1 = [0, 1, 0, 1, 1, 0, 1, 0]
-    jsteg.write(info1)
-    sequence_after_dct2 = jsteg.get_sequence_after_dct()
-    # 读
-    jsteg.set_sequence_after_dct(sequence_after_dct2)
-    info2 = jsteg.read()
-    print(info2)
-'''
