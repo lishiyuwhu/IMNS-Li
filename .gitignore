@@ -103,6 +103,7 @@ ENV/
 # mypath
 .idea/
 ML&DL/Learn_use_tfrecords/TFrecord_cifar10/data/
+ML&DL/data
 *.tfrecords
 *.test
 *.train
