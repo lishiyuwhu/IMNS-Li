@@ -1,0 +1,6 @@
+F5 Steganography in Java
+F5 is a steganography algo for hiding information in JPEG images. Unless other implementations it really hides it inside the image itself (not in metadata/comment fields or appended to the end of the file).
+
+This project hosts the source code for a Java F5 steganography implementation as open source.
+
+Credits for this go to Andreas Westfeld, it's base on his work.
