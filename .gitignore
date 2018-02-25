@@ -101,17 +101,15 @@ ENV/
 .mypy_cache/
 
 # mypath
-tensorlayer/
 .idea/
 ML&DL/Learn_use_tfrecords/TFrecord_cifar10/data/
-ML&DL/Learn_use_tfrecords/TFrecord_Mnist/pngtest/
-ML&DL/Learn_use_tfrecords/TFrecord_Mnist/pngtrain/
-ML&DL/Learn_use_tfrecords/TFrecord_Mnist/test/
-ML&DL/Learn_use_tfrecords/TFrecord_Mnist/train/
-!DeepSteganalysis/cover减stego/
+ML&DL/data
 *.tfrecords
 *.test
 *.train
+*.pgm
+*.jpg
+*.png
 *.cifar10
 *.pngtest
 *.pngtrain
