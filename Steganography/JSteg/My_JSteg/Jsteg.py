@@ -7,12 +7,15 @@
 import math
 import numpy as np
 import cv2
-from scipy import fftpack
 
 
 def dis(img):
+    img2 = img
+    if img.dtype != 'uint8':
+        img2 = img2.astype(np.uint8) 
+    
     cv2.namedWindow("Image")
-    cv2.imshow("Image", img)
+    cv2.imshow("Image", img2)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
@@ -20,7 +23,7 @@ def dis(img):
 class JSteg:
     def __init__(self):
         self.img = None
-        self.dct = None
+        self.dct_ = None
         self.dct_quantified = None
         self.max_info_len = 0
         self.row = 0
@@ -34,18 +37,18 @@ class JSteg:
         row, col = self.img.shape
         if not ((row / 8).is_integer() and (col / 8).is_integer()):
             print('像素横纵要为8的倍数')
-            self.img = self.img[:int(row / 8) * 8, :int(col / 8) * 8]
+            self.img = self.img[:int(row // 8) * 8, :int(col // 8) * 8]
             row, col = self.img.shape
-            print('已裁剪为%d * %d' % row, col)
         self.row = row
         self.col = col
+
 
     def write(self, pgm_file):
         # DCT & quantify
         array = self.img
-        array = dct(array)
-        self.dct = array
-        array = quantify(array)
+        array = self.dct(array)
+        self.dct_ = array
+        array = self.quantify(array)
         self.dct_quantified = array
         self.dct_quantified = self.dct_quantified.flatten()
 
@@ -55,31 +58,37 @@ class JSteg:
         info_len = pgm.shape[0] * pgm.shape[1]
         info_index = 0
         info = pgm_info.flatten()
-        while True:
+        
+        for i in range(self.col*self.row):
+            if self._write(i, info[info_index]):
+#                print(info_index)
+                info_index += 1
             if info_index >= info_len:
                 break
-            for i in range(self.row):
-                for j in range(self.col):
-                    if self._write((i, j), info[info_index]):
-                        info_index += 1
-
-        self.encode_img = self.dct_quantified().resize([self.row, self.col])
-        self.encode_img = i_quantify(self.encode_img)
-        self.encode_img = idct(self.encode_img)
+        temp = self.dct_quantified
+        temp.resize(self.row, self.col)
+        self.dct_quantified = temp
+        self.encode_img = temp
+#        self.dct_quantified = self.dct_quantified.resize(self.row, self.col)
+#        self.encode_img = self.dct_quantified.resize([self.row, self.col])
+        
+        self.encode_img = self.i_quantify(self.encode_img)
+        self.encode_img = self.idct(self.encode_img)
         self.encode_img = self.encode_img.astype(np.uint8)
 
     def read(self, row, col):
         info_len = row * col
         # DCT & quantify
         array = self.img
-        array = dct(array)
+        array = self.dct(array)
         self.dct = array
-        array = quantify(array)
+        array = self.quantify(array)
         self.dct_quantified = array
 
         info = []
         info_index = 0
         self.dct_quantified = self.dct_quantified.flatten()
+        sequence_index = 0
         while True:
             if info_index >= info_len:
                 break
@@ -88,9 +97,11 @@ class JSteg:
                 info.append(data)
                 info_index += 1
             sequence_index += 1
-
+        
         info = np.array(info)
-        info = info.astype(np.uint8).resize([row, col]) * 255
+        info = info.astype(np.uint8)
+        info.resize(row, col)
+        info = info *255
 
         self.decode_img = info
 
@@ -112,6 +123,8 @@ class JSteg:
                 self.dct_quantified[index] = origin - 1
             elif (lower_bit, data) == (1, 0):
                 self.dct_quantified[index] = origin + 1
+        return True
+                
 
     def _read(self, index):
         if self.dct_quantified[index] not in (-1, 1, 0):
@@ -127,6 +140,7 @@ class JSteg:
                 # 也可以用np.lib.stride_tricks.as_strided(sudoku, shape=shape, strides=strides) 
                 temp = full_array[i:i + 8, j:j + 8]
                 full_array[i:i + 8, j:j + 8] = cv2.dct(temp)
+        return full_array
 
     def idct(self, full_array):
         row, col = full_array.shape
@@ -135,8 +149,8 @@ class JSteg:
                 # 也可以用np.lib.stride_tricks.as_strided(sudoku, shape=shape, strides=strides) 
                 temp = full_array[i:i + 8, j:j + 8]
                 full_array[i:i + 8, j:j + 8] = cv2.idct(temp)
-
         full_array = full_array + 128
+        return full_array
 
     def quantify(self, full_array):
         row, col = full_array.shape
@@ -154,8 +168,9 @@ class JSteg:
                 full_array[i:i + 8, j:j + 8] = np.around(temp / qu_array)
         self.dct_quantified = full_array
 
-        self.available_info_len = (full_array != 0).sum() + (full_array != 1).sum()
+        self.available_info_len =  row*col -  (full_array == 0).sum() - (full_array == 1).sum()
         print('available_info_len = %d' % self.available_info_len)
+        return full_array
 
     def i_quantify(self, full_array):
         row, col = full_array.shape
@@ -171,3 +186,12 @@ class JSteg:
             for j in range(0, col, 8):
                 temp = full_array[i:i + 8, j:j + 8]
                 full_array[i:i + 8, j:j + 8] = np.around(temp * qu_array)
+        return full_array
+
+if __name__ == '__main__':
+    a = JSteg()
+    a.set_img('1.pgm')
+#    a.write('0.pgm')
+    
+#    a.read(20,20)
+    
