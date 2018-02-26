@@ -31,6 +31,8 @@ class JSteg:
         self.available_info_len = 0
         self.encode_img = None
         self.decode_img = None
+        self.test = None
+        self.info_test = None
 
     def set_img(self, input_img):
         self.img = cv2.imread(input_img, flags=0).astype(np.float32)
@@ -50,36 +52,51 @@ class JSteg:
         self.dct_ = array
         array = self.quantify(array)
         self.dct_quantified = array
-        self.dct_quantified = self.dct_quantified.flatten()
+        
+        
+        
+        self.info_test = array
+        
+        
+        
+        self.dct_quantified = self.dct_quantified.ravel()
 
         pgm = cv2.imread(pgm_file, 0)
-        pgm_info = np.where(pgm > 127, 1, 0)
+        pgm_info = np.where(pgm > 127, 1, 0)#*255
 
         info_len = pgm.shape[0] * pgm.shape[1]
         info_index = 0
-        info = pgm_info.flatten()
+        
+        info = pgm_info.ravel()
         
         for i in range(self.col*self.row):
             if self._write(i, info[info_index]):
-#                print(info_index)
+#                print('i=%d, info_index= %d, info[info_index]=%d' % (i,info_index,info[info_index]))
+                print('self.dct_quantified[i]=%d'%self.dct_quantified[i])
+                
+                
                 info_index += 1
+            
             if info_index >= info_len:
                 break
+        
+        self.test = self.dct_quantified.copy()
+        
+        print(self.test)
+        
         temp = self.dct_quantified
         temp.resize(self.row, self.col)
-        self.dct_quantified = temp
         self.encode_img = temp
-#        self.dct_quantified = self.dct_quantified.resize(self.row, self.col)
-#        self.encode_img = self.dct_quantified.resize([self.row, self.col])
         
-        self.encode_img = self.i_quantify(self.encode_img)
-        self.encode_img = self.idct(self.encode_img)
-        self.encode_img = self.encode_img.astype(np.uint8)
 
-    def read(self, row, col):
+        temp = self.i_quantify(temp)
+        temp = self.idct(temp)
+        self.encode_img = temp
+
+    def read(self, row, col, imgarray):
         info_len = row * col
         # DCT & quantify
-        array = self.img
+        array = imgarray
         array = self.dct(array)
         self.dct = array
         array = self.quantify(array)
@@ -191,7 +208,9 @@ class JSteg:
 if __name__ == '__main__':
     a = JSteg()
     a.set_img('1.pgm')
-#    a.write('0.pgm')
-    
-#    a.read(20,20)
+    a.write('0.pgm')
+#    pgm = cv2.imread('0.pgm', flags=0).astype(np.float32)
+#    pgm_info = np.where(pgm > 127, 1, 0)*255
+    a.read(20,20, a.encode_img)
+    dis(a.decode_img)
     
