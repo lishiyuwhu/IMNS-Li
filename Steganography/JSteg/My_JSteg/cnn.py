@@ -35,7 +35,7 @@ img_shape= [256,256,1]
 
 
 
-model_file_name = "cnn_BossBase_256x256.ckpt"
+model_file_name = "./Save/cnn_BossBase_256x256.ckpt"
 resume = False # load model, resume from previous checkpoint?
 
 
