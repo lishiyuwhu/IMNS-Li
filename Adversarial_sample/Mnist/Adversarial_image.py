@@ -73,13 +73,44 @@ def plot_predictions(image_list, output_probs=False, adversarial=False):
         # Only use when plotting original, partial deriv and adversarial images
         if (adversarial) & (i % 3 == 1): 
             grid[i].set_title("Adversarial \nPartial Derivatives")
-        
     plt.show()
     
     return prob if output_probs else None
 
 
+# Mostly inspired by:
+# https://codewords.recurse.com/issues/five/why-do-neural-networks-think-a-panda-is-a-vulture
+def create_plot_adversarial_images(x_image, y_label, lr=0.1, n_steps=1, output_probs=False):
+    
+    original_image = x_image
+    probs_per_step = []
+    
+    # Calculate loss, derivative and create adversarial image
+    # https://www.tensorflow.org/versions/r0.11/api_docs/python/train/gradient_computation
+    loss = tl.cost.cross_entropy(y, y_label, 'loss')
+    deriv = tf.gradients(loss, x)
+    image_adv = tf.stop_gradient(x - tf.sign(deriv)*lr/n_steps)
+    image_adv = tf.clip_by_value(image_adv, 0, 1) # prevents -ve values creating 'real' image
+    
+    for _ in range(n_steps):
+        # Calculate derivative and adversarial image
+        dydx = sess.run(deriv, {x: x_image}) # can't seem to access 'deriv' w/o running this
+        x_adv = sess.run(image_adv, {x: x_image})
+        
+        # Create darray of 3 images - orig, noise/delta, adversarial
 
+        x_image = np.reshape(x_adv, (1, 28,28,1))
+        
+        img_adv_list = original_image
+        img_adv_list = np.append(img_adv_list, dydx[0], axis=0)
+        img_adv_list = np.append(img_adv_list, x_image, axis=0)
+        test = x_image
+        
+        # Print/plot images and return probabilities
+        probs = plot_predictions(img_adv_list, output_probs=output_probs, adversarial=True)
+        probs_per_step.append(probs) if output_probs else None
+    
+    return probs_per_step, test
 
 
 
@@ -148,8 +179,9 @@ if resume:
 
 
 
-network.print_params()
-network.print_layers()
+#network.print_params()
+#network.print_layers()
+#print('==============')
 #
 #for epoch in range(n_epoch):
 #    start_time = time.time()
@@ -184,6 +216,10 @@ network.print_layers()
             
 #sess.close()
 
+
+
+
+
 if __name__ =='__main__':
 #    print("test accuracy %g"%acc.eval(feed_dict={x: X_test[0:500],y_: y_test[0:500]}))
     pass
@@ -193,6 +229,18 @@ if __name__ =='__main__':
 #    x_batch = X_test[index_of_2s]
 #    plot_predictions(x_batch)
     
+
+
+    # Pick a random 2 image from first 1000 images 
+    # Create adversarial image and with target label 6
+    index_of_2s = [idx for idx, e in enumerate(y_test) if e==2][0:100]
+    rand_index = np.random.randint(0, len(index_of_2s))
+    image_norm = X_test[index_of_2s[rand_index]:index_of_2s[rand_index]+1]
+#    image_norm = np.reshape(image_norm, (1, 28,28,1))
+    label_adv = [6]#np.array([0,0,0,0,0,0,1,0,0,0]) # one hot encoded, adversarial label 6
+    # Plot adversarial images
+    # Over each step, model certainty changes from 2 to 6
+    _, test= create_plot_adversarial_images(image_norm, label_adv, lr=0.2, n_steps=10)    
 
     
 
