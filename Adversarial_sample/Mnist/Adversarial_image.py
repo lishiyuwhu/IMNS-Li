@@ -4,11 +4,6 @@
 # @Author  : Shiyu Li
 # @Software: PyCharm
 
-#! /usr/bin/python3
-# -*- coding: utf-8 -*-
-# @Time    : 2018/2/27 15:15
-# @Author  : Shiyu Li
-# @Software: PyCharm
 
 import numpy as np
 import tensorlayer as tl
