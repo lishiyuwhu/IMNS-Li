@@ -70,14 +70,15 @@ class JSteg:
 
         for i in range(self.col * self.row):
             if self._write(i, info[info_index]):
-                print('i=%d, info_index= %d, info[info_index]=%d' % (i, info_index, info[info_index]))
+                # print('i=%d, info_index= %d, info[info_index]=%d' % (i, info_index, info[info_index]))
                 #                print('self.dct_quantified[i]=%d'%self.dct_quantified[i])
 
                 info_index += 1
 
             if info_index >= info_len:
                 break
-
+        print('info_index:')
+        print(info_index)
         self.test = self.dct_quantified.copy()
 
         print(self.test)

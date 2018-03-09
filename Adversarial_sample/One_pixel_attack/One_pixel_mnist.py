@@ -11,17 +11,27 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 
 def perturb_image(xs, img):
+    '''
+    :param xs:  perturbation
+    :param img: one img
+    :return:
+
+    #test perturb_image()
+    # pixel = np.array([5, 5, 1])
+    # img_pre = perturb_image(pixel, img_norm)
+
+    '''
     # If this function is passed just one perturbation vector,
     # pack it in a list to keep the computation the same
     if img.shape == (1,28,28,1):
-        img.resize([28,28])
+        img.resize([28,28,1])
 
     if xs.ndim < 2:
         xs = np.array([xs])
 
     # Copy the image n == len(xs) times so that we can
     # create n new perturbed images
-    tile = [len(xs)] + [1] * (xs.ndim)
+    tile = [len(xs)] + [1] * (xs.ndim+1)
     imgs = np.tile(img, tile)
 
     # Make sure to floor the members of xs as int types
@@ -33,11 +43,8 @@ def perturb_image(xs, img):
         pixels = np.split(x, len(x) // 3)
         for pixel in pixels:
             # At each pixel's x,y position, assign its rgb value
-
-            x_pos, y_pos, rgb = pixel
+            x_pos, y_pos, *rgb = pixel
             img[x_pos, y_pos] = rgb
-            img.resize([1,28,28,1])
-
     return imgs
 
 def predict_classes(xs, img, target_class=None, minimize=True):
@@ -112,18 +119,18 @@ def plot_predictions(image_list, output_probs=False, adversarial=False):
 
     return prob if output_probs else None
 
-def attack_success(x, img, target_class, model, targeted_attack=False, verbose=False):
+def attack_success(x_1, img, target_class, targeted_attack=False, verbose=False):
     # Perturb the image with the given pixel(s) and get the prediction of the model
-    attack_image = perturb_image(x, x_test[img])
-    if attack_image.shape != (1,28,28,1):
-        attack_image.resize([1,28,28,1])
-    confidence = y.eval(feed_dict={x: attack_image})
+    attack_image = perturb_image(x_1, img)
+#    if attack_image.shape != (1,28,28,1):
+#        attack_image.resize([1,28,28,1])
+
+    confidence = y_prob.eval(feed_dict={x: attack_image})
     predicted_class = np.argmax(confidence)
-    
     # If the prediction is what we want (misclassification or 
     # targeted classification), return True
     if (verbose):
-        print('Confidence:', confidence[target_class])
+        print('Confidence:', confidence[0][target_class])
     if ((targeted_attack and predicted_class == target_class) or
         (not targeted_attack and predicted_class != target_class)):
         return True
@@ -219,12 +226,18 @@ if __name__ == '__main__':
     img_norm = X_test[img_index].reshape([1,28,28,1])
     
 
-    # test Review_img() plot_predictions()
+    # #test Review_img() plot_predictions()
     # Review_img([X_test[img_index]], [np.array([0,0,0,0,1,0,0,0,0,0])])
     # plot_predictions(img_norm)
     
-    # test perturb_image()
+    #test perturb_image()
     # pixel = np.array([5, 5, 1])
     # img_pre = perturb_image(pixel, img_norm)
-    # img_pre.resize([1,28,28,1])
+    # print(img_pre.shape)
     # print(predict_classes(pixel, img_pre))
+    
+    #test attack_success()
+    pixel = np.array([5, 5, 1])
+    label = 4
+    success = attack_success(pixel, img_norm, label, verbose=True)
+    

@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import cv2
 from tensorlayer.layers import *
 from mpl_toolkits.axes_grid1 import ImageGrid
+import numpy as np
 
 
 def Review_img(image_list, image_labels):
@@ -94,7 +95,7 @@ def create_plot_adversarial_images(x_image, y_label, lr=0.1, n_steps=1, output_p
     return probs_per_step, test
 
 
-model_file_name = "model.npz"
+model_file_name = "Bossbase_adv.npz"
 resume = True  # load model, resume from previous checkpoint?
 
 sess = tf.InteractiveSession()
@@ -151,13 +152,36 @@ if resume:
 if __name__ == '__main__':
 
     target = JSteg.JSteg()
-    target.set_img('122.pgm')
-    target.write('0.pgm')
+    target.set_img('7.pgm')
+    target.write('42_85p85.pgm')
+    
+    raw = cv2.imread('7.pgm', 0).astype(np.float32)
+    line = 90
+    raw[:line]= target.encode_img[:line]
+    target.read(85,85,raw)
+    JSteg.dis(target.decode_img)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    '''
     encode_image_temp = target.encode_img
     encode_image = encode_image_temp/255.
 
     print("========================")
     print("encode_img的预测结果")
+    if len(encode_image.shape)==2:
+        encode_image.resize([1,256,256,1])
     plot_predictions(encode_image)
 
     print("========================")
@@ -166,9 +190,15 @@ if __name__ == '__main__':
                             (encode_image, [0], lr=0.05, n_steps=5)
 
     #encode_image  encode_image_adv拼接
-    encode_image_adv[8:] = encode_image[8:]
-
-    JSteg.dis(encode_image_adv)
+    if len(encode_image_adv.shape)==2 and len(encode_image.shape)==2:
+        encode_image_adv[8:] = encode_image[8:]
+        print('shape=2')
+    if len(encode_image_adv.shape)==4 and len(encode_image.shape)==4:
+        encode_image_adv[0][8:] = encode_image[0][8:]
+        print('shape=4')
+    temp = encode_image_adv.copy()
+    temp.resize([256,256])
+    JSteg.dis(temp*255)
 
 
     print("========================")
@@ -177,9 +207,10 @@ if __name__ == '__main__':
 
     print("========================")
     print("decode")
-    target.read(20,20,encode_image_adv*255)
+    target.read(85,85,encode_image_adv*255)
     JSteg.dis(target.decode_img)
 
 
     #sess.close()
-
+    '''
+    

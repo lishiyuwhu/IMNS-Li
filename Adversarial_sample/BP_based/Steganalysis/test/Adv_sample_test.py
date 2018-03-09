@@ -8,9 +8,9 @@ import numpy as np
 import tensorlayer as tl
 import tensorflow as tf
 import matplotlib.pyplot as plt
-import cv2
 from tensorlayer.layers import *
 from mpl_toolkits.axes_grid1 import ImageGrid
+import JSteg
 
 
 def Review_img(image_list, image_labels):
@@ -164,6 +164,39 @@ if resume:
 
 
 if __name__ == '__main__':
+    target = JSteg.JSteg()
+    target.set_img('7.pgm')
+    target.write('0.pgm')
+    encode_image_temp = target.encode_img
+    encode_image = encode_image_temp/255.
+
+    print("========================")
+    print("encode_img的预测结果")
+    
+    if len(encode_image.shape)==2:
+        encode_image.resize([1,256,256,1])
+    plot_predictions(encode_image)
+
+    print("========================")
+    print("encode_img_adv的预测结果")
+    _, encode_image_adv = create_plot_adversarial_images\
+                            (encode_image, [0], lr=0.05, n_steps=5)
+
+    #encode_image  encode_image_adv拼接
+    encode_image_adv[8:] = encode_image[8:]
+
+    print("========================")
+    print("拼接后的encode_img_adv的预测结果")
+    plot_predictions(encode_image_adv)
+
+    print("========================")
+    print("decode")
+    target.read(20,20,encode_image_adv*255)
+
+
+
+
+    '''
     img_name = '122.pgm'
     img = cv2.imread(img_name, 0)
     img = img/255.
@@ -177,7 +210,7 @@ if __name__ == '__main__':
     # adv_img
     label_adv = [0]
     _, test = create_plot_adversarial_images(img, label_adv, lr=0.05, n_steps=5)
-
+'''
     
     
 '''
