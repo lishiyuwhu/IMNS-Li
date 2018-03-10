@@ -9,6 +9,7 @@ import tensorlayer as tl
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
+from differential_evolution import differential_evolution
 
 def perturb_image(xs, img):
     '''
@@ -50,10 +51,11 @@ def perturb_image(xs, img):
 def predict_classes(xs, img, target_class=None, minimize=True):
     # Perturb the image with the given pixel(s) x and get the prediction of the model
     imgs_perturbed = perturb_image(xs, img)
-    if imgs_perturbed.shape != (1,28,28,1):
-        imgs_perturbed.resize([1,28,28,1])
+    imgs_temp = imgs_perturbed.copy()
+    if imgs_temp.shape != (1,28,28,1):
+        imgs_temp.resize([1,28,28,1])
     
-    prob = y_prob.eval(feed_dict={x: imgs_perturbed})
+    prob = y_prob.eval(feed_dict={x: imgs_temp})
     predictions = prob.max(axis=1)
     # This function should always be minimized, so return its complement if needed
     return predictions if minimize else 1 - predictions
@@ -119,6 +121,7 @@ def plot_predictions(image_list, output_probs=False, adversarial=False):
 
     return prob if output_probs else None
 
+
 def attack_success(x_1, img, target_class, targeted_attack=False, verbose=False):
     # Perturb the image with the given pixel(s) and get the prediction of the model
     attack_image = perturb_image(x_1, img)
@@ -135,7 +138,45 @@ def attack_success(x_1, img, target_class, targeted_attack=False, verbose=False)
         (not targeted_attack and predicted_class != target_class)):
         return True
 
+def attack(img, real_lable,target=None, pixel_count=1, 
+           maxiter=75, popsize=400, verbose=False):
+    # Change the target class based on whether this is a targeted attack or not
+    targeted_attack = target is not None
+    target_class = target if targeted_attack else real_lable
+    
+    # Define bounds for a flat vector of x,y,r,g,b values
+    # For more pixels, repeat this layout
+    bounds = [(0,28), (0,28), (0,256)] * pixel_count
+    
+    # Population multiplier, in terms of the size of the perturbation vector x
+    popmul = max(1, popsize // len(bounds))
+    
+    # Format the predict/callback functions for the differential evolution algorithm
+    predict_fn = lambda xs: predict_classes(
+        xs, img, target_class, target is None)
+    callback_fn = lambda x, convergence: attack_success(
+        x, img, target_class, targeted_attack, verbose)
+    
+    # Call Scipy's Implementation of Differential Evolution
+    attack_result = differential_evolution(
+        predict_fn, bounds, maxiter=maxiter, popsize=popmul,
+        recombination=1, atol=-1, callback=callback_fn, polish=False)
 
+    # Calculate some useful statistics to return from this function
+    attack_image = perturb_image(attack_result.x, real_lable)#[0]
+    prior_probs = y_prob.eval(feed_dict={x: img})
+    predicted_probs = y_prob.eval(feed_dict={x: attack_image}) 
+    predicted_class = np.argmax(predicted_probs)
+    actual_class = real_lable
+    success = predicted_class != actual_class
+    cdiff = prior_probs[actual_class] - predicted_probs[actual_class]
+
+    # Show the best attempt at a solution (successful or not)
+    plot_predictions(attack_image)
+
+
+
+    return [pixel_count, img, actual_class, predicted_class, success, cdiff, prior_probs, predicted_probs, attack_result.x]
 
 model_file_name = "model.npz"
 resume = True  # load model, resume from previous checkpoint?
@@ -225,7 +266,7 @@ if __name__ == '__main__':
     img_index = 42
     img_norm = X_test[img_index].reshape([1,28,28,1])
     
-
+    _ = attack(img_norm,4,pixel_count=1, verbose=True,)
     # #test Review_img() plot_predictions()
     # Review_img([X_test[img_index]], [np.array([0,0,0,0,1,0,0,0,0,0])])
     # plot_predictions(img_norm)
@@ -237,7 +278,9 @@ if __name__ == '__main__':
     # print(predict_classes(pixel, img_pre))
     
     #test attack_success()
-    pixel = np.array([5, 5, 1])
-    label = 4
-    success = attack_success(pixel, img_norm, label, verbose=True)
+    # pixel = np.array([5, 5, 1])
+    # label = 4
+    # success = attack_success(pixel, img_norm, label, verbose=True)
+    
+    
     

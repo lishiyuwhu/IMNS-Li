@@ -74,6 +74,7 @@ def create_plot_adversarial_images(x_image, y_label, lr=0.1, n_steps=1, output_p
     probs_per_step = []
 
     # Calculate loss, derivative and create adversarial image
+    loss = tl.cost.cross_entropy(y, y_label, 'loss')
     deriv = tf.gradients(loss, x)
     image_adv = tf.stop_gradient(x - tf.sign(deriv) * lr / n_steps)
     image_adv = tf.clip_by_value(image_adv, 0, 1)  # prevents -ve values creating 'real' image
@@ -95,7 +96,7 @@ def create_plot_adversarial_images(x_image, y_label, lr=0.1, n_steps=1, output_p
     return probs_per_step, test
 
 
-model_file_name = "Bossbase_adv.npz"
+model_file_name = "own_Bossbase_adv.npz"
 resume = True  # load model, resume from previous checkpoint?
 
 sess = tf.InteractiveSession()
@@ -126,8 +127,10 @@ net = Conv2d(net, 1, (5, 5), (1, 1), act=tf.identity,
              padding='VALID', W_init=high_pass_filter, name='HighPass')
 net = Conv2d(net, 64, (5, 5), (2, 2), act=tf.nn.relu,
              padding='VALID', W_init=W_init, name='trainCONV1')
+net = tl.layers.MaxPool2d(net, (2, 2), (2, 2), padding='SAME', name='pool1')
 net = Conv2d(net, 16, (5, 5), (2, 2), act=tf.nn.relu,
              padding='VALID', W_init=W_init, name='trainCONV2')
+net = tl.layers.MaxPool2d(net, (2, 2), (2, 2), padding='SAME', name='pool2')
 net = FlattenLayer(net, name='trainFlatten')
 net = DenseLayer(net, n_units=500, act=tf.nn.relu,
                  W_init=W_init2, b_init=b_init2, name='trainFC1')
@@ -155,26 +158,27 @@ if __name__ == '__main__':
     target.set_img('7.pgm')
     target.write('42_85p85.pgm')
     
+    
+    '''
     raw = cv2.imread('7.pgm', 0).astype(np.float32)
     line = 90
     raw[:line]= target.encode_img[:line]
     target.read(85,85,raw)
     JSteg.dis(target.decode_img)
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     '''
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     encode_image_temp = target.encode_img
     encode_image = encode_image_temp/255.
 
@@ -212,5 +216,4 @@ if __name__ == '__main__':
 
 
     #sess.close()
-    '''
     
