@@ -13,7 +13,14 @@ from tensorlayer.layers import *
 from mpl_toolkits.axes_grid1 import ImageGrid
 import numpy as np
 
-
+    
+def get_y_prob(image_list):
+    temp = image_list.copy()
+    if image_list.max() < 2:
+        temp = temp*255
+    prob = y_prob.eval(feed_dict={x: temp})
+    return prob
+    
 def Review_img(image_list, image_labels):
     fig = plt.figure(1, (5., 5.))
     grid = ImageGrid(fig, 111,  # similar to subplot(111)
@@ -35,8 +42,8 @@ def plot_predictions(image_list, output_probs=False, adversarial=False):
     If adversarial == True, replace middle image title appropriately
     Return probability list if output_probs == True
     '''
-    prob = y_prob.eval(feed_dict={x: image_list})
-
+    # prob = y_prob.eval(feed_dict={x: image_list})
+    prob = get_y_prob(image_list)
     pred_list = np.zeros(len(image_list)).astype(int)
     pct_list = np.zeros(len(image_list)).astype(int)
 
@@ -96,7 +103,7 @@ def create_plot_adversarial_images(x_image, y_label, lr=0.1, n_steps=1, output_p
     return probs_per_step, test
 
 
-model_file_name = "own_Bossbase_adv.npz"
+model_file_name = "Own_Steganography_Bossbase.npz"
 resume = True  # load model, resume from previous checkpoint?
 
 sess = tf.InteractiveSession()
@@ -127,10 +134,10 @@ net = Conv2d(net, 1, (5, 5), (1, 1), act=tf.identity,
              padding='VALID', W_init=high_pass_filter, name='HighPass')
 net = Conv2d(net, 64, (5, 5), (2, 2), act=tf.nn.relu,
              padding='VALID', W_init=W_init, name='trainCONV1')
-net = tl.layers.MaxPool2d(net, (2, 2), (2, 2), padding='SAME', name='pool1')
+#net = tl.layers.MaxPool2d(net, (2, 2), (2, 2), padding='SAME', name='pool1')
 net = Conv2d(net, 16, (5, 5), (2, 2), act=tf.nn.relu,
              padding='VALID', W_init=W_init, name='trainCONV2')
-net = tl.layers.MaxPool2d(net, (2, 2), (2, 2), padding='SAME', name='pool2')
+#net = tl.layers.MaxPool2d(net, (2, 2), (2, 2), padding='SAME', name='pool2')
 net = FlattenLayer(net, name='trainFlatten')
 net = DenseLayer(net, n_units=500, act=tf.nn.relu,
                  W_init=W_init2, b_init=b_init2, name='trainFC1')
@@ -158,7 +165,6 @@ if __name__ == '__main__':
     target.set_img('7.pgm')
     target.write('42_85p85.pgm')
     
-    
     '''
     raw = cv2.imread('7.pgm', 0).astype(np.float32)
     line = 90
@@ -167,42 +173,31 @@ if __name__ == '__main__':
     JSteg.dis(target.decode_img)
     '''
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    encode_image_temp = target.encode_img
+    encode_image_temp = target.encode_img.copy()
     encode_image = encode_image_temp/255.
 
     print("========================")
     print("encode_img的预测结果")
     if len(encode_image.shape)==2:
         encode_image.resize([1,256,256,1])
-    plot_predictions(encode_image)
+    plot_predictions(encode_image*255)
 
     print("========================")
     print("encode_img_adv的预测结果")
     _, encode_image_adv = create_plot_adversarial_images\
-                            (encode_image, [0], lr=0.05, n_steps=5)
+                            (encode_image, [0], lr=0.002, n_steps=5)
 
     #encode_image  encode_image_adv拼接
+    print("========================")
+    print("encode_image  encode_image_adv拼接, 前96行")
     if len(encode_image_adv.shape)==2 and len(encode_image.shape)==2:
-        encode_image_adv[8:] = encode_image[8:]
+        encode_image_adv[:96] = encode_image[:96]
         print('shape=2')
     if len(encode_image_adv.shape)==4 and len(encode_image.shape)==4:
-        encode_image_adv[0][8:] = encode_image[0][8:]
+        encode_image_adv[0][:96] = encode_image[0][:96]
         print('shape=4')
-    temp = encode_image_adv.copy()
-    temp.resize([256,256])
-    JSteg.dis(temp*255)
+
+
 
 
     print("========================")
@@ -211,9 +206,6 @@ if __name__ == '__main__':
 
     print("========================")
     print("decode")
-    target.read(85,85,encode_image_adv*255)
-    JSteg.dis(target.decode_img)
+    target.read(85,85,encode_image_adv.reshape([256,256])*255)
+    plt.imshow(target.decode_img)
 
-
-    #sess.close()
-    

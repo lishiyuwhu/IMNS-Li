@@ -7,11 +7,6 @@
 import numpy as np
 import cv2
 
-def imgencode(img_name, img_info_name):
-    temp = JSteg()
-    temp.set_img(img_name)
-    temp.write(img_info_name)
-    return temp.encode_img
 
 def dis(img):
     img2 = img
@@ -210,13 +205,9 @@ class JSteg:
 
 if __name__ == '__main__':
     a = JSteg()
-    a.set_img('7.pgm')
-    a.write('42_85p85.pgm')
+    a.set_img('1.pgm')
+    a.write('0.pgm')
 #    pgm = cv2.imread('0.pgm', flags=0).astype(np.float32)
 #    pgm_info = np.where(pgm > 127, 1, 0)*255
-    raw = cv2.imread('7.pgm',0).astype(np.float32)
-    enc = a.encode_img
-    line = 88
-    raw[:line] = enc[:line]
-    a.read(85,85, raw)
-    dis(a.decode_img)
+#    a.read(20,20, a.encode_img)
+#    dis(a.decode_img)

@@ -21,24 +21,23 @@ def read_and_decode(filename, img_shape):
                                            'label': tf.FixedLenFeature([], tf.int64),
                                            'img_raw': tf.FixedLenFeature([], tf.string),
                                        })
-    img = tf.decode_raw(features['img_raw'], tf.uint8)
+    img = tf.decode_raw(features['img_raw'], tf.float32)/255
     img = tf.reshape(img, img_shape)
-    img = tf.cast(img, tf.float32)  # if you want to use tfrecords as input.
     label = tf.cast(features['label'], tf.int32)
     return img, label
 
 
 
-model_file_name = "Bossbase_adv.npz"
+model_file_name = "own_Bossbase_adv.npz"
 resume = False # load model, resume from previous checkpoint?
 
 
 
 
 
-batch_size = 128
-train_file = "train_CroppedBossBase-1.0-256x256_SUniward0.4bpp.tfrecords"
-test_file = "test_CroppedBossBase-1.0-256x256_SUniward0.4bpp.tfrecords"
+batch_size = 64
+train_file = "own_CroppedBossBase-1.0-256x256.tfrecords"
+test_file = 
 img_shape= [256,256,1]
 
 
@@ -52,8 +51,7 @@ with tf.device('/cpu:0'):
 
     x_train_, y_train_ = read_and_decode(train_file, img_shape)
     x_train_batch, y_train_batch = tf.train.shuffle_batch([x_train_, y_train_],
-                                                          batch_size=batch_size, capacity=2000,
-                                                          min_after_dequeue=1000)  # , num_threads=32) # set the number of threads here
+                                                          batch_size=batch_size, capacity=100,min_after_dequeue=10)  # , num_threads=32) # set the number of threads here
 
     x_test_, y_test_ = read_and_decode(test_file, img_shape)
     x_test_batch, y_test_batch = tf.train.batch([x_test_, y_test_],
@@ -162,7 +160,7 @@ with tf.device('/cpu:0'):
             print("   test loss: %f" % (test_loss / n_batch))
             print("   test acc: %f" % (test_acc / n_batch))
 
-        if (epoch+1)%50 == 0 :# for test
+        if (epoch+1)%10 == 0 :# for test
             print("Save model " + "!" * 10)
             tl.files.save_npz(network.all_params , name=model_file_name)
 
