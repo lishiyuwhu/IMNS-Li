@@ -229,13 +229,13 @@ if __name__ =='__main__':
     # Pick a random 2 image from first 1000 images 
     # Create adversarial image and with target label 6
     index_of_2s = [idx for idx, e in enumerate(y_test) if e==2][0:100]
-    rand_index = np.random.randint(0, len(index_of_2s))
+    rand_index = 3
     image_norm = X_test[index_of_2s[rand_index]:index_of_2s[rand_index]+1]
 #    image_norm = np.reshape(image_norm, (1, 28,28,1))
     label_adv = [6]#np.array([0,0,0,0,0,0,1,0,0,0]) # one hot encoded, adversarial label 6
     # Plot adversarial images
     # Over each step, model certainty changes from 2 to 6
-    _, test= create_plot_adversarial_images(image_norm, label_adv, lr=0.2, n_steps=10)    
+    _, test= create_plot_adversarial_images(image_norm, label_adv, lr=0.5, n_steps=10)    
 
     
 
