@@ -235,7 +235,7 @@ if __name__ =='__main__':
     label_adv = [6]#np.array([0,0,0,0,0,0,1,0,0,0]) # one hot encoded, adversarial label 6
     # Plot adversarial images
     # Over each step, model certainty changes from 2 to 6
-    _, test= create_plot_adversarial_images(image_norm, label_adv, lr=0.5, n_steps=10)    
+    _, test= create_plot_adversarial_images(image_norm, label_adv, lr=0.2, n_steps=4)    
 
     
 

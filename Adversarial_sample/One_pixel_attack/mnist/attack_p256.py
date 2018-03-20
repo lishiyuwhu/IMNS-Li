@@ -8,7 +8,7 @@
 import pickle
 import numpy as np
 import pandas as pd
-import matplotlib
+import matplotlib, random
 import tensorlayer as tl
 import tensorflow as tf
 from matplotlib import pyplot as plt
@@ -233,8 +233,7 @@ tl.files.save_npz(network.all_params , name=model_file_name, sess=sess)
 '''
 
 if __name__ == '__main__':
-    image = 42 # num of the image in X_test
-    image_norm = X_test[image]
+
     
     # plot_image(X_test[image].reshape([28,28]))
     
@@ -252,7 +251,20 @@ if __name__ == '__main__':
     # print('Attack success:', success == True)
     # plot_image(perturb_image(pixel, X_test[image])[0])
     
-    pixels = 3 # Number of pixels to attack
+    #  [ attack_image, pixel_count, img, actual_class, predicted_class, success, cdiff, prior_probs, predicted_probs, attack_result.x]
 
-    img_adv,*_ = attack(image, pixel_count=pixels, verbose=True)
+
+    
+    while True:
+        pixels=5
+        image = random.randint(1,300) # num of the image in X_test
+        image_norm = X_test[image]
+        attack_image, pixel_count, img, actual_class, predicted_class, success, cdiff, prior_probs, predicted_probs, _ =\
+            attack(image, pixel_count=pixels, verbose=True)
+        if predicted_probs[actual_class] < 0.5:
+            break
+
+        
+    
+    
 
