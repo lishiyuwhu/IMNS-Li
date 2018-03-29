@@ -113,3 +113,5 @@ ML&DL/data
 *.cifar10
 *.pngtest
 *.pngtrain
+*.npz
+*.gz
